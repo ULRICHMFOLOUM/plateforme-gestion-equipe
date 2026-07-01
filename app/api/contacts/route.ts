@@ -139,9 +139,12 @@ export async function POST(request: NextRequest) {
       });
       if (existingRequest) return NextResponse.json({ error: "Demande déjà en attente" }, { status: 400 });
 
-      // Création de la demande d'invitation
-      const contactRequest = await prisma.contactRequest.create({
-        data: { senderId: currentUserId, receiverId: targetUserId, message: message || null },
+      // Création ou réactivation de la demande d'invitation
+      // On utilise upsert pour gérer le cas où une demande précédemment refusée existe déjà
+      const contactRequest = await prisma.contactRequest.upsert({
+        where: { senderId_receiverId: { senderId: currentUserId, receiverId: targetUserId } },
+        update: { status: "PENDING", message: message || null, updatedAt: new Date() },
+        create: { senderId: currentUserId, receiverId: targetUserId, message: message || null },
         include: { receiver: { select: { id: true, name: true, email: true, image: true } } },
       });
 
