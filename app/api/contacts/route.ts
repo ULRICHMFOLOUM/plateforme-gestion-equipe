@@ -92,7 +92,10 @@ export async function POST(request: NextRequest) {
       existingContactIds.push(currentUserId); // S'exclure soi-même
 
       const users = await prisma.user.findMany({
-        where: { email: { contains: searchQuery }, id: { notIn: existingContactIds } },
+        where: { 
+          email: { contains: searchQuery, mode: "insensitive" }, 
+          id: { notIn: existingContactIds } 
+        },
         select: { id: true, name: true, email: true, image: true }, take: 10,
       });
 
