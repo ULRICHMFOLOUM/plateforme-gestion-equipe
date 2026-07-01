@@ -1,28 +1,26 @@
 "use client";
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import LoadingScreen from "@/components/ui/LoadingScreen";
 import {
   Search,
-  Phone,
-  Video,
   MessageSquare,
   Star,
   UserPlus,
   X,
   Mail,
-  Briefcase,
-  MoreVertical,
   Check,
   Clock,
   Bell,
   Loader2,
-  Send,
   Trash2,
+  CheckCircle2,
+  AlertCircle,
+  Send,
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -52,6 +50,13 @@ interface ContactRequest {
   createdAt: Date;
 }
 
+// Toast notification type
+interface Toast {
+  id: number;
+  message: string;
+  type: "success" | "error";
+}
+
 export default function ContactsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -64,7 +69,8 @@ export default function ContactsPage() {
   const [showRequestsPanel, setShowRequestsPanel] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+  const [toasts, setToasts] = useState<Toast[]>([]);
+
   // Add contact modal
   const [showAddModal, setShowAddModal] = useState(false);
   const [userSearch, setUserSearch] = useState("");
@@ -72,6 +78,12 @@ export default function ContactsPage() {
   const [isSearching, setIsSearching] = useState(false);
   const [selectedUser, setSelectedUser] = useState<ContactRequest | null>(null);
   const [invitationMessage, setInvitationMessage] = useState("");
+
+  const showToast = useCallback((message: string, type: "success" | "error" = "success") => {
+    const id = Date.now();
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000);
+  }, []);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -154,14 +166,14 @@ export default function ContactsPage() {
         const newRequest = await response.json();
         setSentRequests([...sentRequests, newRequest]);
         resetAddModal();
-        alert("Demande de contact envoyée!");
+        showToast("Invitation envoyée avec succès !");
       } else {
         const error = await response.json();
-        alert(error.error || "Erreur lors de l'envoi de la demande");
+        showToast(error.error || "Erreur lors de l'envoi de la demande", "error");
       }
     } catch (error) {
       console.error("Erreur lors de l'envoi de la demande:", error);
-      alert("Erreur lors de l'envoi de la demande");
+      showToast("Erreur lors de l'envoi de la demande", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -182,10 +194,10 @@ export default function ContactsPage() {
       if (response.ok) {
         // Refresh contacts
         await fetchContacts();
-        alert("Contact ajouté avec succès!");
+        showToast("Contact ajouté avec succès !");
       } else {
         const error = await response.json();
-        alert(error.error || "Erreur lors de l'acceptation");
+        showToast(error.error || "Erreur lors de l'acceptation", "error");
       }
     } catch (error) {
       console.error("Erreur lors de l'acceptation:", error);
@@ -294,6 +306,33 @@ export default function ContactsPage() {
   if (status === "unauthenticated" || !session) return null;
 
   return (
+    <>
+    {/* Toast Notifications */}
+    <div className="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none">
+      <AnimatePresence>
+        {toasts.map((toast) => (
+          <motion.div
+            key={toast.id}
+            initial={{ opacity: 0, x: 80, scale: 0.9 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 80, scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            className={`flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl pointer-events-auto min-w-[280px] max-w-sm ${
+              toast.type === "success"
+                ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white"
+                : "bg-gradient-to-r from-red-500 to-rose-500 text-white"
+            }`}
+          >
+            {toast.type === "success" ? (
+              <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+            ) : (
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            )}
+            <span className="font-semibold text-sm">{toast.message}</span>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -878,5 +917,6 @@ export default function ContactsPage() {
         )}
       </AnimatePresence>
     </div>
+    </>
   );
 }
