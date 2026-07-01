@@ -63,9 +63,11 @@ export async function GET(request: NextRequest) {
       sentRequests: formattedSentRequests, 
       receivedRequests: formattedReceivedRequests 
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Erreur GET contacts:", error);
-    return NextResponse.json({ error: "Erreur interne du serveur" }, { status: 500 });
+    return NextResponse.json({ 
+      error: "Erreur interne du serveur (GET): " + (error?.message || String(error)) 
+    }, { status: 500 });
   }
 }
 
@@ -214,8 +216,10 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ error: "Action non valide" }, { status: 400 });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Erreur POST contacts:", error);
-    return NextResponse.json({ error: "Erreur interne du serveur" }, { status: 500 });
+    return NextResponse.json({ 
+      error: "Erreur interne du serveur: " + (error?.message || String(error)) 
+    }, { status: 500 });
   }
 }
