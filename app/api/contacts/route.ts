@@ -144,14 +144,24 @@ export async function POST(request: NextRequest) {
       });
       if (existingRequest) return NextResponse.json({ error: "Demande déjà en attente" }, { status: 400 });
 
-      // Création ou réactivation de la demande d'invitation
-      // On utilise upsert pour gérer le cas où une demande précédemment refusée existe déjà
-      const contactRequest = await prisma.contactRequest.upsert({
-        where: { senderId_receiverId: { senderId: currentUserId, receiverId: targetUserId } },
-        update: { status: "PENDING", message: message || null, updatedAt: new Date() },
-        create: { senderId: currentUserId, receiverId: targetUserId, message: message || null },
-        include: { receiver: { select: { id: true, name: true, email: true, image: true } } },
+      // Recherche d'une demande existante entre ces deux utilisateurs
+      const existingReq = await prisma.contactRequest.findFirst({
+        where: { senderId: currentUserId, receiverId: targetUserId },
       });
+
+      let contactRequest;
+      if (existingReq) {
+        contactRequest = await prisma.contactRequest.update({
+          where: { id: existingReq.id },
+          data: { status: "PENDING", message: message || null, updatedAt: new Date() },
+          include: { receiver: { select: { id: true, name: true, email: true, image: true } } },
+        });
+      } else {
+        contactRequest = await prisma.contactRequest.create({
+          data: { senderId: currentUserId, receiverId: targetUserId, message: message || null },
+          include: { receiver: { select: { id: true, name: true, email: true, image: true } } },
+        });
+      }
 
       return NextResponse.json({
         id: contactRequest.id, receiverId: contactRequest.receiver.id,
