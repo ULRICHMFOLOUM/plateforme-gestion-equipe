@@ -1,0 +1,23 @@
+Starting Prisma test...
+Successfully fetched project: cmn7z0eoz0003ta8osl1rwh6j
+Project details: {
+  "id": "cmn7z0eoz0003ta8osl1rwh6j",
+  "name": "VITRINE MESOTHECH",
+  "description": "test",
+  "accessCode": "FHND4C",
+  "status": "ACTIVE",
+  "priority": "MEDIUM",
+  "progress": 100,
+  "startDate": null,
+  "endDate": null,
+  "budget": null,
+  "spent": null,
+  "isFavorite": false,
+  "color": "blue",
+  "tags": null,
+  "createdAt": "2026-03-26T21:14:32.663Z",
+  "updatedAt": "2026-03-26T21:35:10.628Z",
+  "ownerId": "cmmtayowt0000ta1cuy3cgnqo",
+  "owner": {
+    "id": "cmmtayowt0000ta1cuy3cgnqo",
+ 

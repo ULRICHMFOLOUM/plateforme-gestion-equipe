@@ -1,0 +1,1 @@
+INSERT INTO User (id, name, email, password, role, createdAt, updatedAt) VALUES ('test-user-id', 'Test User', 'test@example.com', '$2a$12$5evWPJUPg5A54fpARm1A2uQRqo8NFL4e4KbA5CulXjvhrZIGUA6/W', 'USER', datetime('now'), datetime('now'));

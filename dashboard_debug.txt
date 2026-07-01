@@ -1,0 +1,22 @@
+2026-03-26T20:21:41.311Z - Session: NULL
+2026-03-26T20:21:41.347Z - Redirecting to /auth/signin
+2026-03-26T20:21:41.376Z - Error in DashboardPage: NEXT_REDIRECT
+2026-03-26T20:22:53.074Z - Session: NULL
+2026-03-26T20:22:53.130Z - Redirecting to /auth/signin
+2026-03-26T20:22:53.141Z - Error in DashboardPage: NEXT_REDIRECT
+2026-03-26T20:23:39.169Z - Session: NULL
+2026-03-26T20:23:39.364Z - Redirecting to /auth/signin
+2026-03-26T20:23:39.425Z - Error in DashboardPage: NEXT_REDIRECT
+2026-03-26T20:24:20.942Z - Session: NULL
+2026-03-26T20:24:21.068Z - Redirecting to /auth/signin
+2026-03-26T20:24:21.083Z - Error in DashboardPage: NEXT_REDIRECT
+2026-03-26T20:25:24.646Z - Session: NULL
+2026-03-26T20:25:24.672Z - Redirecting to /auth/signin
+2026-03-26T20:25:24.710Z - Error in DashboardPage: NEXT_REDIRECT
+2026-03-26T20:25:58.686Z - Session: NULL
+2026-03-26T20:25:58.743Z - Redirecting to /auth/signin
+2026-03-26T20:25:58.810Z - Error in DashboardPage: NEXT_REDIRECT
+2026-03-26T20:26:38.802Z - Session: NULL
+2026-03-26T20:26:38.836Z - Redirecting to /auth/signin
+2026-03-26T20:26:38.855Z - Error in DashboardPage: NEXT_REDIRECT
+2026-03-26T20:31:02.603Z - Auth failed: Invalid password

@@ -1,0 +1,10 @@
+No database host or connection string was set, and key parameters have default values (host: localhost, user: user, db: user, password: null). Is an environment variable missing? Alternatively, if you intended to connect with these parameters, please set the host to 'localhost' explicitly.
+Error: No database host or connection string was set, and key parameters have default values (host: localhost, user: user, db: user, password: null). Is an environment variable missing? Alternatively, if you intended to connect with these parameters, please set the host to 'localhost' explicitly.
+    at Un.connect (C:\Users\user\PLATEFORME  DE GESTION EQUIPE\node_modules\@neondatabase\serverless\index.js:1318:50)
+    at Dn.newClient (C:\Users\user\PLATEFORME  DE GESTION EQUIPE\node_modules\@neondatabase\serverless\index.js:1117:85)
+    at Dn.connect (C:\Users\user\PLATEFORME  DE GESTION EQUIPE\node_modules\@neondatabase\serverless\index.js:1114:1)
+    at Dn.query (C:\Users\user\PLATEFORME  DE GESTION EQUIPE\node_modules\@neondatabase\serverless\index.js:1138:1)
+    at Dn.query (C:\Users\user\PLATEFORME  DE GESTION EQUIPE\node_modules\@neondatabase\serverless\index.js:1354:96)
+    at PrismaNeonAdapter.performIO (C:\Users\user\PLATEFORME  DE GESTION EQUIPE\node_modules\@prisma\adapter-neon\dist\index.js:554:40)
+    at PrismaNeonAdapter.queryRaw (C:\Users\user\PLATEFORME  DE GESTION EQUIPE\node_modules\@prisma\adapter-neon\dist\index.js:515:41)
+    at <anonymous> (C:\Users\user\PLATEFORME  DE GESTION EQUIPE\node_modules\@prisma\driver-adapter-utils\src\binder.ts:133:23)

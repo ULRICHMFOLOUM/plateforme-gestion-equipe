@@ -1,0 +1,449 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+/// *
+///  * Modèle Account : Gère les comptes liés (NextAuth)
+///  * Utilisé pour l'authentification via des fournisseurs tiers.
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+/// *
+///  * Modèle Session : Gère les sessions actives des utilisateurs
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// *
+///  * Modèle User : Le coeur de la plateforme
+///  * Contient les informations de profil et les relations avec tous les autres modules.
+model User {
+  id                      String            @id @default(cuid())
+  name                    String?
+  email                   String            @unique
+  emailVerified           DateTime?
+  image                   String?
+  password                String?
+  role                    Role              @default(USER)
+  firstName               String?
+  lastName                String?
+  bio                     String?
+  phone                   String?
+  department              String?
+  jobTitle                String?
+  timezone                String?           @default("Africa/Douala")
+  language                String?           @default("fr")
+  isActive                Boolean           @default(true)
+  lastLogin               DateTime?
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+  accounts                Account[]
+  activityLogs            ActivityLog[]
+  chatMessages            ChatMessage[]
+  comments                Comment[]
+  contactOf               Contact[]         @relation("ContactOf")
+  contacts                Contact[]         @relation("UserContacts")
+  receivedContactRequests ContactRequest[]  @relation("ReceivedContactRequests")
+  sentContactRequests     ContactRequest[]  @relation("SentContactRequests")
+  events                  Event[]
+  files                   File[]
+  groupMembers            GroupMember[]
+  receivedMessages        Message[]         @relation("ReceivedMessages")
+  sentMessages            Message[]         @relation("SentMessages")
+  notifications           Notification[]
+  ownedProjects           Project[]         @relation("OwnedProjects")
+  reports                 Report[]
+  createdRooms            Room[]            @relation("CreatedRooms")
+  roomMemberships         RoomMember[]
+  sessions                Session[]
+  assignedTasks           Task[]            @relation("AssignedTasks")
+  tasks                   Task[]            @relation("UserTasks")
+  hostedConferences       VideoConference[] @relation("HostedConferences")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+/// *
+///  * Modèle Task : Gestion des tâches individuelles ou liées à un projet
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  priority    Priority   @default(MEDIUM)
+  dueDate     DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  userId      String
+  projectId   String?
+  assigneeId  String?
+  comments    Comment[]
+  files       File[]
+  assignee    User?      @relation("AssignedTasks", fields: [assigneeId], references: [id])
+  project     Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user        User       @relation("UserTasks", fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// *
+///  * Modèle Project : Structure de haut niveau pour regrouper les tâches et membres
+model Project {
+  id              String            @id @default(cuid())
+  name            String
+  description     String?
+  accessCode      String            @unique
+  status          ProjectStatus     @default(ACTIVE)
+  priority        Priority          @default(MEDIUM)
+  progress        Int               @default(0)
+  startDate       DateTime?
+  endDate         DateTime?
+  budget          Float?
+  spent           Float?
+  isFavorite      Boolean           @default(false)
+  color           String            @default("blue")
+  tags            String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  ownerId         String
+  activityLogs    ActivityLog[]
+  comments        Comment[]
+  Event           Event[]
+  files           File[]
+  members         GroupMember[]
+  owner           User              @relation("OwnedProjects", fields: [ownerId], references: [id], onDelete: Cascade)
+  Report          Report[]
+  rooms           Room[]
+  tasks           Task[]
+  VideoConference VideoConference[]
+}
+
+model Group {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  members     GroupMember[]
+}
+
+/// *
+///  * Modèle GroupMember : Table de liaison pour les membres de projets ou groupes
+model GroupMember {
+  id        String    @id @default(cuid())
+  userId    String
+  groupId   String?
+  projectId String?
+  role      GroupRole @default(CONTRIBUTOR)
+  createdAt DateTime  @default(now())
+  group     Group?    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  project   Project?  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId, projectId])
+}
+
+/// *
+///  * Modèle File : Gestion des documents et médias uploadés
+model File {
+  id         String   @id @default(cuid())
+  name       String
+  url        String
+  size       Int?
+  type       String?
+  uploadedAt DateTime @default(now())
+  userId     String
+  projectId  String?
+  taskId     String?
+  project    Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  task       Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// *
+///  * Modèle Message : Messages simples hors système de salons
+model Message {
+  id         String   @id @default(cuid())
+  content    String
+  sentAt     DateTime @default(now())
+  senderId   String
+  receiverId String?
+  receiver   User?    @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+/// *
+///  * Modèle Room : Salon de discussion (Privé ou Groupe)
+model Room {
+  id            String        @id @default(cuid())
+  name          String
+  type          RoomType
+  createdAt     DateTime      @default(now())
+  createdById   String
+  projectId     String?
+  lastMessageAt DateTime?
+  messages      ChatMessage[]
+  createdBy     User          @relation("CreatedRooms", fields: [createdById], references: [id], onDelete: Cascade)
+  project       Project?      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  members       RoomMember[]
+}
+
+model RoomMember {
+  id     String @id @default(cuid())
+  roomId String
+  userId String
+  room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+}
+
+/// *
+///  * Modèle ChatMessage : Message stocké au sein d'un salon spécifique
+model ChatMessage {
+  id       String     @id @default(cuid())
+  content  String
+  sentAt   DateTime   @default(now())
+  senderId String
+  roomId   String
+  files    ChatFile[]
+  room     Room       @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  sender   User       @relation(fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+model ChatFile {
+  id        String      @id @default(cuid())
+  name      String
+  url       String
+  size      Int?
+  type      String?
+  messageId String
+  message   ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+}
+
+/// *
+///  * Modèle Event : Évènements liés au calendrier
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  location    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+  projectId   String?
+  Project     Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// *
+///  * Modèle Comment : Commentaires sur les tâches ou projets
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  userId    String
+  taskId    String?
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  task      Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// *
+///  * Modèle Report : Rapports d'activité générés
+model Report {
+  id        String     @id @default(cuid())
+  title     String
+  content   String
+  type      ReportType
+  createdAt DateTime   @default(now())
+  userId    String
+  projectId String?
+  Project   Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// *
+///  * Modèle VideoConference : Sessions de visioconférence programmées ou en cours
+model VideoConference {
+  id          String           @id @default(cuid())
+  title       String
+  description String?
+  roomId      String           @unique
+  startTime   DateTime
+  endTime     DateTime?
+  status      ConferenceStatus @default(SCHEDULED)
+  createdAt   DateTime         @default(now())
+  hostId      String
+  projectId   String?
+  host        User             @relation("HostedConferences", fields: [hostId], references: [id], onDelete: Cascade)
+  Project     Project?         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+/// *
+///  * Modèle Contact : Table de liaison pour les contacts acceptés
+model Contact {
+  id        String        @id @default(cuid())
+  userId    String
+  contactId String
+  status    ContactStatus @default(ACCEPTED)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime
+  contact   User          @relation("ContactOf", fields: [contactId], references: [id], onDelete: Cascade)
+  user      User          @relation("UserContacts", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, contactId])
+}
+
+/// *
+///  * Modèle ContactRequest : Gestion des demandes d'invitation (En attente, Acceptée, Refusée)
+model ContactRequest {
+  id         String        @id @default(cuid())
+  senderId   String
+  receiverId String
+  message    String?
+  status     RequestStatus @default(PENDING)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  receiver   User          @relation("ReceivedContactRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender     User          @relation("SentContactRequests", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+}
+
+/// *
+///  * Modèle Notification : Alertes et messages informatifs pour l'utilisateur
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  data      String?
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// *
+///  * Modèle ActivityLog : Historique des actions effectuées sur la plateforme
+model ActivityLog {
+  id        String   @id @default(cuid())
+  action    String
+  details   String?
+  type      String
+  createdAt DateTime @default(now())
+  userId    String
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum ConferenceStatus {
+  SCHEDULED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum ContactStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum GroupRole {
+  OWNER
+  MANAGER
+  CONTRIBUTOR
+  VIEWER
+  ADMIN
+  MEMBER
+}
+
+enum NotificationType {
+  CONTACT_REQUEST
+  CONTACT_ACCEPTED
+  PROJECT_INVITE
+  TASK_ASSIGNED
+  TASK_COMPLETED
+  GENERAL
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum ProjectStatus {
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum ReportType {
+  ACTIVITY
+  PERFORMANCE
+  FINANCIAL
+  TASKS
+  TEAM
+  FULL
+  PROGRESS
+  BUDGET
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum RoomType {
+  DIRECT
+  GROUP
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}

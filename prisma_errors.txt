@@ -1,0 +1,64 @@
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+
+Error: Prisma schema validation - (validate wasm)
+Error code: P1012
+[1;91merror[0m: [1mError parsing attribute "@default": Expected an enum value, but found `"USER"`.[0m
+  [1;94m-->[0m  [4mprisma\schema.prisma:43[0m
+[1;94m   | [0m
+[1;94m42 | [0m  password          String?
+[1;94m43 | [0m  role              Role              [1;91m@default("USER")[0m
+[1;94m   | [0m
+[1;91merror[0m: [1mError parsing attribute "@default": Expected an enum value, but found `"TODO"`.[0m
+  [1;94m-->[0m  [4mprisma\schema.prisma:92[0m
+[1;94m   | [0m
+[1;94m91 | [0m  description String?
+[1;94m92 | [0m  status      TaskStatus [1;91m@default("TODO")[0m
+[1;94m   | [0m
+[1;91merror[0m: [1mError parsing attribute "@default": Expected an enum value, but found `"MEDIUM"`.[0m
+  [1;94m-->[0m  [4mprisma\schema.prisma:93[0m
+[1;94m   | [0m
+[1;94m92 | [0m  status      TaskStatus @default("TODO")
+[1;94m93 | [0m  priority    Priority   [1;91m@default("MEDIUM")[0m
+[1;94m   | [0m
+[1;91merror[0m: [1mError parsing attribute "@default": Expected an enum value, but found `"ACTIVE"`.[0m
+  [1;94m-->[0m  [4mprisma\schema.prisma:112[0m
+[1;94m   | [0m
+[1;94m111 | [0m  accessCode   String            @unique @default(cuid())
+[1;94m112 | [0m  status       ProjectStatus     [1;91m@default("ACTIVE")[0m
+[1;94m   | [0m
+[1;91merror[0m: [1mError parsing attribute "@default": Expected an enum value, but found `"MEDIUM"`.[0m
+  [1;94m-->[0m  [4mprisma\schema.prisma:113[0m
+[1;94m   | [0m
+[1;94m112 | [0m  status       ProjectStatus     @default("ACTIVE")
+[1;94m113 | [0m  priority     Priority          [1;91m@default("MEDIUM")[0m
+[1;94m   | [0m
+[1;91merror[0m: [1mError parsing attribute "@default": Expected an enum value, but found `"CONTRIBUTOR"`.[0m
+  [1;94m-->[0m  [4mprisma\schema.prisma:151[0m
+[1;94m   | [0m
+[1;94m150 | [0m  projectId String?
+[1;94m151 | [0m  role      GroupRole [1;91m@default("CONTRIBUTOR")[0m
+[1;94m   | [0m
+[1;91merror[0m: [1mError parsing attribute "@default": Expected an enum value, but found `"SCHEDULED"`.[0m
+  [1;94m-->[0m  [4mprisma\schema.prisma:288[0m
+[1;94m   | [0m
+[1;94m287 | [0m  endTime     DateTime?
+[1;94m288 | [0m  status      ConferenceStatus [1;91m@default("SCHEDULED")[0m
+[1;94m   | [0m
+[1;91merror[0m: [1mError parsing attribute "@default": Expected an enum value, but found `"ACCEPTED"`.[0m
+  [1;94m-->[0m  [4mprisma\schema.prisma:300[0m
+[1;94m   | [0m
+[1;94m299 | [0m  contactId String
+[1;94m300 | [0m  status    ContactStatus [1;91m@default("ACCEPTED")[0m
+[1;94m   | [0m
+[1;91merror[0m: [1mError parsing attribute "@default": Expected an enum value, but found `"PENDING"`.[0m
+  [1;94m-->[0m  [4mprisma\schema.prisma:314[0m
+[1;94m   | [0m
+[1;94m313 | [0m  message    String?
+[1;94m314 | [0m  status     RequestStatus [1;91m@default("PENDING")[0m
+[1;94m   | [0m
+
+Validation Error Count: 9
+[Context: validate]
+
+Prisma CLI Version : 6.19.0

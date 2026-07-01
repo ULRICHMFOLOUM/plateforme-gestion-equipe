@@ -1,0 +1,42 @@
+﻿node.exe : Environment 
+variables loaded from .env
+At C:\Program 
+Files\nodejs\npx.ps1:29 
+char:3
++   & $NODE_EXE 
+$NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~
+    + CategoryInfo        
+      : NotSpecified    : 
+(Environment vari    
+ables loaded from .    
+env:String) [], Rem    
+oteException
+    + FullyQualifiedErr   
+ orId : NativeComman    
+dError
+ 
+Prisma schema loaded from prisma\schema.prisma
+node:internal/process/prom
+ises:394
+    triggerUncaughtExcepti
+on(err, true /* 
+fromPromise */);
+    ^
+
+Error: aborted
+    at TLSSocket.socketClo
+seListener 
+(node:_http_client:478:19)
+    at TLSSocket.emit 
+(node:events:530:35)
+    at node:net:351:12
+    at TCP.done 
+(node:_tls_wrap:650:7) {
+  code: 'ECONNRESET',
+  attemptNumber: 1,
+  retriesLeft: 2
+}
+
+Node.js v22.16.0

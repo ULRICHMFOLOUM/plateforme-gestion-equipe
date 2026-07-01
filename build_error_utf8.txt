@@ -1,0 +1,103 @@
+﻿
+> plateforme-de-gestion-equipe@0.1.0 build
+> next build
+
+  Ôû▓ Next.js 14.2.3
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+node.exe :  ÔÜá Compiled with warnings
+At C:\Program Files\nodejs\npm.ps1:29 char:3
++   & $NODE_EXE $NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ( ÔÜá Compiled wit 
+   h warnings:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+./components/ui/Button.tsx
+There are multiple modules with names that only differ in 
+casing.
+This can lead to unexpected behavior when compiling on a 
+filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\user\PLATEFORME  DE GESTION EQUIPE\n
+ode_modules\next\dist\build\webpack\loaders\next-flight-client-
+module-loader.js!C:\Users\user\PLATEFORME  DE GESTION EQUIPE\no
+de_modules\next\dist\build\webpack\loaders\next-swc-loader.js??
+ruleSet[1].rules[15].oneOf[5].use[1]!C:\Users\user\PLATEFORME  
+DE GESTION EQUIPE\components\ui\Button.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\user\PLATEFORME  DE GESTION EQUIPE
+\node_modules\next\dist\build\webpack\loaders\next-flight-clien
+t-module-loader.js!C:\Users\user\PLATEFORME  DE GESTION EQUIPE\
+node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+??ruleSet[1].rules[15].oneOf[5].use[1]!C:\Users\user\PLATEFORME
+  DE GESTION EQUIPE\app\profile\page.tsx|app-pages-browser
+* javascript/auto|C:\Users\user\PLATEFORME  DE GESTION EQUIPE\n
+ode_modules\next\dist\build\webpack\loaders\next-flight-client-
+module-loader.js!C:\Users\user\PLATEFORME  DE GESTION EQUIPE\no
+de_modules\next\dist\build\webpack\loaders\next-swc-loader.js??
+ruleSet[1].rules[15].oneOf[5].use[1]!C:\Users\user\PLATEFORME  
+DE GESTION EQUIPE\components\ui\button.tsx|app-pages-browser
+    Used by 12 module(s), i. e.
+    javascript/auto|C:\Users\user\PLATEFORME  DE GESTION EQUIPE
+\node_modules\next\dist\build\webpack\loaders\next-flight-clien
+t-entry-loader.js?modules=%7B%22request%22%3A%22C%3A%5C%5CUsers
+%5C%5Cuser%5C%5CPLATEFORME%20%20DE%20GESTION%20EQUIPE%5C%5Ccomp
+onents%5C%5Cui%5C%5Cbutton.tsx%22%2C%22ids%22%3A%5B%22Button%22
+%5D%7D&server=false!|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Button.tsx
+./app/profile/page.tsx
+
+./components/ui/Button.tsx
+There are multiple modules with names that only differ in 
+casing.
+This can lead to unexpected behavior when compiling on a 
+filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\user\PLATEFORME  DE GESTION EQUIPE\n
+ode_modules\next\dist\build\webpack\loaders\next-flight-client-
+module-loader.js!C:\Users\user\PLATEFORME  DE GESTION EQUIPE\no
+de_modules\next\dist\build\webpack\loaders\next-swc-loader.js??
+ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\user\PLATEFORME  
+DE GESTION EQUIPE\components\ui\Button.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\user\PLATEFORME  DE GESTION EQUIPE
+\node_modules\next\dist\build\webpack\loaders\next-flight-clien
+t-module-loader.js!C:\Users\user\PLATEFORME  DE GESTION EQUIPE\
+node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\user\PLATEFORME
+  DE GESTION EQUIPE\app\profile\page.tsx|ssr
+* javascript/auto|C:\Users\user\PLATEFORME  DE GESTION EQUIPE\n
+ode_modules\next\dist\build\webpack\loaders\next-flight-client-
+module-loader.js!C:\Users\user\PLATEFORME  DE GESTION EQUIPE\no
+de_modules\next\dist\build\webpack\loaders\next-swc-loader.js??
+ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\user\PLATEFORME  
+DE GESTION EQUIPE\components\ui\button.tsx|ssr
+    Used by 12 module(s), i. e.
+    javascript/auto|C:\Users\user\PLATEFORME  DE GESTION EQUIPE
+\node_modules\next\dist\build\webpack\loaders\next-flight-clien
+t-entry-loader.js?modules=%7B%22request%22%3A%22C%3A%5C%5CUsers
+%5C%5Cuser%5C%5CPLATEFORME%20%20DE%20GESTION%20EQUIPE%5C%5Ccomp
+onents%5C%5Cui%5C%5Cbutton.tsx%22%2C%22ids%22%3A%5B%22Button%22
+%5D%7D&server=true!|ssr
+
+Import trace for requested module:
+./components/ui/Button.tsx
+./app/profile/page.tsx
+
+   Linting and checking validity of types ...
+Failed to compile.
+
+./app/(public)/page.tsx:8:12
+Type error: Expression expected.
+
+[0m [90m 6 |[39m   [33mCheckCircle2[39m[33m,[39m[0m
+[0m [90m 7 |[39m   [33mUsers[39m[33m,[39m[0m
+[0m[31m[1m>[22m[39m[90m 8 |[39m   
+[33mCalendar[39m[33m,[39m[0m
+[0m [90m   |[39m            [31m[1m^[22m[39m[0m
+[0m [90m 9 |[39m[0m

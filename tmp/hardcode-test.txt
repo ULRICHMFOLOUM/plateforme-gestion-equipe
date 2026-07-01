@@ -1,0 +1,1 @@
+{"message":"Erreur interne du serveur","error":"No database host or connection string was set, and key parameters have default values (host: localhost, user: user, db: user, password: null). Is an environment variable missing? Alternatively, if you intended to connect with these parameters, please set the host to 'localhost' explicitly."}

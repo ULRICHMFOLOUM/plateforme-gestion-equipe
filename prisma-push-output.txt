@@ -1,0 +1,29 @@
+﻿node.exe : Environment 
+variables loaded from .env
+At C:\Program 
+Files\nodejs\npx.ps1:29 
+char:3
++   & $NODE_EXE 
+$NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (E  
+  nvironment variables    
+ loaded from .env:Stri    
+ng) [], RemoteExcepti    
+on
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "neondb", schema "public" at "ep-muddy-star-amqmyxrc.c-5.us-east-1.aws.neon.tech"
+
+ÔÜá´©Å  There might be data loss when applying the changes:
+
+  ÔÇó You are about to drop the `playing_with_neon` table, which is not empty (10 rows).
+
+
+
+[?25l[2K[1G[36m?[39m [1mDo you want to ignore the warning(s)?[22m [90m┬╗[39m [90m(y/N)[39m
