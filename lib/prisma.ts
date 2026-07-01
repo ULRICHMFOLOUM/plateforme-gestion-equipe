@@ -1,11 +1,17 @@
 import { PrismaClient } from "@prisma/client";
-import { neon } from "@neondatabase/serverless";
-import { PrismaNeonHttp } from "@prisma/adapter-neon";
+import { PrismaNeon } from "@prisma/adapter-neon";
+import { neonConfig } from "@neondatabase/serverless";
+import ws from "ws";
+
+// Configuration du constructeur WebSocket pour l'environnement Node.js
+if (typeof window === "undefined") {
+  neonConfig.webSocketConstructor = ws;
+}
 
 /**
  * Ce fichier configure le client Prisma pour interagir avec la base de données PostgreSQL (Neon).
- * On utilise un adaptateur HTTP (PrismaNeonHttp) pour garantir la stabilité de la connexion
- * dans les environnements où les ports TCP standards (5432) sont bloqués.
+ * On utilise l'adaptateur WebSocket (PrismaNeon) pour supporter pleinement les transactions 
+ * (nécessaires pour l'authentification et les contacts) tout en passant par le port sécurisé 443.
  */
 
 // Déclaration d'une variable pour le singleton Prisma afin d'éviter de créer 
@@ -13,7 +19,7 @@ import { PrismaNeonHttp } from "@prisma/adapter-neon";
 let prisma: PrismaClient;
 
 /**
- * Fonction pour initialiser le client Prisma avec l'adaptateur HTTP de Neon.
+ * Fonction pour initialiser le client Prisma avec l'adaptateur WebSocket de Neon.
  */
 function getPrismaClient() {
   const connectionString = process.env.DATABASE_URL;
@@ -21,9 +27,8 @@ function getPrismaClient() {
     throw new Error("ERREUR FATALE: La variable DATABASE_URL est absente du fichier .env");
   }
   
-  // Initialisation de l'adaptateur HTTP pour Neon
-  // Cela permet de passer par le port 80/443 au lieu du 5432.
-  const adapter = new PrismaNeonHttp(connectionString as any, {} as any);
+  // Initialisation de l'adaptateur WebSocket pour Neon
+  const adapter = new PrismaNeon({ connectionString });
   
   return new PrismaClient({ 
     adapter, 
