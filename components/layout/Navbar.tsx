@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
-import { Users, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
 
 export function Navbar() {
@@ -17,15 +18,21 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
+          <Link href="/" className="flex items-center gap-2 group">
             <motion.div
-              whileHover={{ rotate: 180, scale: 1.1 }}
-              transition={{ duration: 0.5 }}
-              className="w-11 h-11 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 transition-shadow"
+              whileHover={{ scale: 1.08 }}
+              transition={{ duration: 0.3 }}
+              className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg group-hover:shadow-blue-500/40 transition-shadow"
             >
-              <Users className="w-6 h-6 text-white" />
+              <Image
+                src="/teamflow-logo.png"
+                alt="TeamFlow Logo"
+                fill
+                className="object-contain"
+                priority
+              />
             </motion.div>
-            <span className="text-2xl font-display font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+            <span className="text-2xl font-display font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               TeamFlow
             </span>
           </Link>

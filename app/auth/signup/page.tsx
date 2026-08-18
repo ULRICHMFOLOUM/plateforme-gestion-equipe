@@ -4,7 +4,52 @@ export const dynamic = 'force-dynamic';
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Eye, EyeOff, User, Mail, Lock, ArrowRight } from "lucide-react";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Eye, EyeOff, User, Mail, Lock, ArrowRight,
+  CheckCircle2, AlertCircle, Shield, Check, X
+} from "lucide-react";
+
+/* ─── Helper for password strength calculation ─── */
+function getPasswordStrength(password: string) {
+  let score = 0;
+  const checks = {
+    length: password.length >= 8,
+    uppercase: /[A-Z]/.test(password),
+    number: /[0-9]/.test(password),
+    special: /[^A-Za-z0-9]/.test(password),
+  };
+
+  if (checks.length) score += 25;
+  if (checks.uppercase) score += 25;
+  if (checks.number) score += 25;
+  if (checks.special) score += 25;
+
+  let label = "Trop court";
+  let color = "bg-slate-600";
+  let textColor = "text-slate-400";
+
+  if (score >= 100) {
+    label = "Très fort";
+    color = "bg-emerald-400";
+    textColor = "text-emerald-400";
+  } else if (score >= 75) {
+    label = "Fort";
+    color = "bg-green-400";
+    textColor = "text-green-400";
+  } else if (score >= 50) {
+    label = "Moyen";
+    color = "bg-amber-400";
+    textColor = "text-amber-400";
+  } else if (score >= 25) {
+    label = "Faible";
+    color = "bg-rose-500";
+    textColor = "text-rose-400";
+  }
+
+  return { score, label, color, textColor, checks };
+}
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
@@ -19,10 +64,18 @@ export default function SignUpPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
+  const strength = getPasswordStrength(formData.password);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+
+    if (formData.password.length < 6) {
+      setError("Le mot de passe doit contenir au moins 6 caractères");
+      setIsLoading(false);
+      return;
+    }
 
     if (formData.password !== formData.confirmPassword) {
       setError("Les mots de passe ne correspondent pas");
@@ -33,9 +86,7 @@ export default function SignUpPage() {
     try {
       const response = await fetch("/api/auth/signup", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
@@ -44,13 +95,13 @@ export default function SignUpPage() {
       });
 
       if (response.ok) {
-        router.push("/auth/signin?message=Compte créé avec succès");
+        router.push("/auth/signin?message=" + encodeURIComponent("Compte créé avec succès. Vous pouvez vous connecter."));
       } else {
         const data = await response.json();
         setError(data.message || "Erreur lors de la création du compte");
       }
-    } catch (error) {
-      setError("Erreur de connexion");
+    } catch {
+      setError("Erreur de connexion au serveur.");
     } finally {
       setIsLoading(false);
     }
@@ -64,168 +115,278 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <User className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Créer un compte
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">
-              Rejoignez TeamFlow
+    <div className="min-h-screen flex bg-gradient-to-br from-slate-900 via-blue-950 to-purple-950 relative overflow-hidden">
+      {/* Ambient background blobs */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <motion.div
+          animate={{ x: [0, 80, 0], y: [0, -40, 0], scale: [1, 1.2, 1] }}
+          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl"
+        />
+        <motion.div
+          animate={{ x: [0, -60, 0], y: [0, 60, 0], scale: [1, 1.3, 1] }}
+          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-600/15 rounded-full blur-3xl"
+        />
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: "radial-gradient(white 1px, transparent 1px)",
+            backgroundSize: "40px 40px",
+          }}
+        />
+      </div>
+
+      {/* ── LEFT PANEL – Branding ── */}
+      <motion.div
+        initial={{ opacity: 0, x: -50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="hidden lg:flex w-[45%] flex-col justify-between p-12 xl:p-16 relative z-10"
+      >
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="relative w-12 h-12 rounded-2xl overflow-hidden shadow-xl shadow-blue-500/20">
+            <Image src="/teamflow-logo.png" alt="TeamFlow" fill className="object-contain" priority />
+          </div>
+          <span className="text-3xl font-black text-white tracking-tight">TeamFlow</span>
+        </Link>
+
+        <div className="space-y-8">
+          <div>
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-5xl xl:text-6xl font-black text-white leading-tight mb-4"
+            >
+              Rejoignez <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-400 to-purple-400">
+                l&apos;aventure !
+              </span>
+            </motion.h1>
+            <p className="text-slate-400 text-lg font-medium max-w-sm leading-relaxed">
+              Créez votre espace de travail d&apos;équipe en quelques secondes et boostez votre productivité.
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                <p className="text-red-600 dark:text-red-400 text-sm">
-                  {error}
-                </p>
-              </div>
-            )}
-
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          {/* Benefits list */}
+          <div className="space-y-4">
+            {[
+              "Espace de travail illimité pour votre équipe",
+              "Outils de collaboration temps réel",
+              "Sécurité renforcée avec 2FA TOTP optionnelle",
+              "Support prioritaire et sauvegardes automatiques"
+            ].map((text, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 + i * 0.1 }}
+                className="flex items-center gap-3"
               >
-                Nom complet
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                  placeholder="Votre nom complet"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >
-                Email
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                  placeholder="votre@email.com"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >
-                Mot de passe
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                  placeholder="Votre mot de passe"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >
-                Confirmer le mot de passe
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                  placeholder="Confirmer votre mot de passe"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2"
-            >
-              {isLoading ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <>
-                  <span>Créer mon compte</span>
-                  <ArrowRight className="w-5 h-5" />
-                </>
-              )}
-            </button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-gray-600 dark:text-gray-400">
-              Déjà un compte ?{" "}
-              <Link
-                href="/auth/signin"
-                className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
-              >
-                Se connecter
-              </Link>
-            </p>
+                <div className="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                </div>
+                <span className="text-slate-300 font-medium text-sm">{text}</span>
+              </motion.div>
+            ))}
           </div>
         </div>
+
+        <div className="text-slate-600 text-sm">© 2024 TeamFlow — Tous droits réservés</div>
+      </motion.div>
+
+      {/* ── RIGHT PANEL – Form ── */}
+      <div className="flex flex-1 items-center justify-center p-4 sm:p-8 relative z-10 my-6 lg:my-0">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="w-full max-w-md"
+        >
+          {/* Mobile logo */}
+          <div className="flex justify-center mb-6 lg:hidden">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="relative w-10 h-10 rounded-xl overflow-hidden">
+                <Image src="/teamflow-logo.png" alt="TeamFlow" fill className="object-contain" />
+              </div>
+              <span className="text-2xl font-black text-white">TeamFlow</span>
+            </Link>
+          </div>
+
+          <div className="bg-white/[0.07] backdrop-blur-2xl border border-white/10 rounded-3xl p-7 sm:p-8 shadow-2xl shadow-black/40">
+            <div className="mb-6">
+              <h2 className="text-2xl font-black text-white mb-1.5">Créer un compte</h2>
+              <p className="text-slate-400 text-sm">
+                Déjà un compte ?{" "}
+                <Link href="/auth/signin" className="text-blue-400 hover:text-blue-300 font-bold transition-colors">
+                  Se connecter
+                </Link>
+              </p>
+            </div>
+
+            {/* Error Banner */}
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8, height: 0 }}
+                  animate={{ opacity: 1, y: 0, height: "auto" }}
+                  exit={{ opacity: 0, y: -8, height: 0 }}
+                  className="flex items-start gap-3 bg-red-500/15 border border-red-500/30 rounded-xl p-4 mb-6 overflow-hidden"
+                >
+                  <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                  <p className="text-red-300 text-sm">{error}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Nom complet */}
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                  Nom complet
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                  <input
+                    name="name"
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/40 transition-all text-sm"
+                    placeholder="ex: Alexandre Dubois"
+                  />
+                </div>
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                  Adresse Email
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                  <input
+                    name="email"
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/40 transition-all text-sm"
+                    placeholder="alexandre@exemple.com"
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                  Mot de passe
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                  <input
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-12 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/40 transition-all text-sm"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors p-0.5"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+
+                {/* Password strength bar */}
+                {formData.password && (
+                  <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="mt-2.5 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-400 font-medium">Force du mot de passe:</span>
+                      <span className={`font-bold ${strength.textColor}`}>{strength.label}</span>
+                    </div>
+                    <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                      <motion.div
+                        animate={{ width: `${strength.score}%` }}
+                        transition={{ duration: 0.3 }}
+                        className={`h-full ${strength.color} rounded-full`}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-1.5 pt-1">
+                      {[
+                        { label: "8+ caractères", ok: strength.checks.length },
+                        { label: "Majuscule", ok: strength.checks.uppercase },
+                        { label: "Un chiffre", ok: strength.checks.number },
+                        { label: "Symbole spécial", ok: strength.checks.special },
+                      ].map((item) => (
+                        <div key={item.label} className="flex items-center gap-1.5 text-[11px]">
+                          {item.ok ? (
+                            <Check className="w-3 h-3 text-emerald-400 shrink-0" />
+                          ) : (
+                            <X className="w-3 h-3 text-slate-600 shrink-0" />
+                          )}
+                          <span className={item.ok ? "text-slate-300 font-medium" : "text-slate-600"}>
+                            {item.label}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+
+              {/* Confirm Password */}
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                  Confirmer le mot de passe
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                  <input
+                    name="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    required
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-12 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/40 transition-all text-sm"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors p-0.5"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Submit button */}
+              <motion.button
+                whileHover={{ scale: isLoading ? 1 : 1.02 }}
+                whileTap={{ scale: isLoading ? 1 : 0.97 }}
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-3.5 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-400 hover:to-purple-500 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed mt-4 text-sm"
+              >
+                {isLoading ? (
+                  <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <span>Créer mon compte</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </motion.button>
+            </form>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

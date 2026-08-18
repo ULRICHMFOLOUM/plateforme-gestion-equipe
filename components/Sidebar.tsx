@@ -4,6 +4,7 @@ import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import {
   Home,
   CheckSquare,
@@ -19,8 +20,9 @@ import {
   LogOut,
   ChevronRight,
   Shield,
-  Layout,
   X,
+  CreditCard,
+  Gift,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useSidebar } from "@/context/SidebarContext";
@@ -53,8 +55,11 @@ const navigation = [
   {
     title: "SYSTÈME",
     items: [
+      { name: "Parrainage 🎁", href: "/referral", icon: Gift, color: "text-amber-500", bgColor: "bg-amber-50" },
       { name: "Administration", href: "/admin", icon: Shield, color: "text-rose-500", bgColor: "bg-rose-50", adminOnly: true },
+      { name: "Abonnements", href: "/admin/billing", icon: CreditCard, color: "text-orange-500", bgColor: "bg-orange-50", adminOnly: true },
       { name: "Paramètres", href: "/settings", icon: Settings, color: "text-slate-500", bgColor: "bg-slate-100" },
+      { name: "Abonnement", href: "/settings/billing", icon: CreditCard, color: "text-purple-500", bgColor: "bg-purple-50" },
     ],
   },
 ];
@@ -96,15 +101,25 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
     <div className="flex-1 flex flex-col min-h-0 bg-white/80 backdrop-blur-xl border-r border-slate-200/50 shadow-xl shadow-slate-200/20">
       {/* Logo Section */}
       <div className="flex flex-col pt-8 pb-6 px-6">
-        <Link href="/dashboard" className="flex items-center group" onClick={onLinkClick}>
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:rotate-6 transition-transform duration-300">
-            <Layout className="w-6 h-6 text-white" />
-          </div>
-          <div className="ml-3 flex flex-col">
+        <Link href="/dashboard" className="flex items-center gap-3 group" onClick={onLinkClick}>
+          <motion.div
+            whileHover={{ scale: 1.08, rotate: 3 }}
+            transition={{ type: "spring", stiffness: 400, damping: 15 }}
+            className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-blue-500/25 ring-2 ring-blue-100 group-hover:ring-blue-300 transition-all duration-300"
+          >
+            <Image
+              src="/teamflow-logo.png"
+              alt="TeamFlow Logo"
+              fill
+              className="object-contain"
+              priority
+            />
+          </motion.div>
+          <div className="flex flex-col">
             <span className="text-xl font-display font-black text-slate-900 tracking-tight leading-none">
               Team<span className="text-blue-600">Flow</span>
             </span>
-            <span className="text-[10px] font-bold text-slate-400 tracking-[0.2em] mt-1 transition-colors group-hover:text-blue-500">
+            <span className="text-[10px] font-bold text-slate-400 tracking-[0.2em] mt-0.5 group-hover:text-blue-500 transition-colors">
               ENTERPRISE
             </span>
           </div>
@@ -202,7 +217,10 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
             </p>
           </div>
           <button
-            onClick={() => signOut({ callbackUrl: "/" })}
+            onClick={async () => {
+              await signOut({ redirect: false });
+              window.location.href = "/";
+            }}
             className="ml-2 p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all"
             title="Déconnexion"
           >

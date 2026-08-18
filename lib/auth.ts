@@ -1,56 +1,94 @@
 import { NextAuthOptions } from "next-auth";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
+import GithubProvider from "next-auth/providers/github";
 import bcrypt from "bcryptjs";
+import { totp } from "./totp";
 import { prisma } from "./prisma";
 
 /**
- * Configuration de NextAuth.js
- * Ce fichier définit comment les utilisateurs se connectent et comment leurs sessions sont gérées.
+ * Configuration de NextAuth.js avec support Google, GitHub, 2FA TOTP & Sécurité Admin
  */
 export const authOptions: NextAuthOptions = {
-  // L'adaptateur Prisma permet de lier NextAuth à notre base de données
   adapter: PrismaAdapter(prisma),
-  
-  // Configuration des fournisseurs d'authentification
+
   providers: [
+    // 1. Google OAuth
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      allowDangerousEmailAccountLinking: true,
+    }),
+
+    // 2. GitHub OAuth
+    GithubProvider({
+      clientId: process.env.GITHUB_CLIENT_ID || "",
+      clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
+      allowDangerousEmailAccountLinking: true,
+    }),
+
+    // 3. Email + Mot de passe + 2FA
     CredentialsProvider({
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        code: { label: "2FA Code", type: "text" },
       },
-      /**
-       * Fonction 'authorize' : C'est ici que l'on vérifie si l'utilisateur peut se connecter.
-       */
       async authorize(credentials) {
         try {
-          // Vérification de la présence des identifiants
           if (!credentials?.email || !credentials?.password) {
             return null;
           }
 
-          // Recherche de l'utilisateur en base de données par son email
           const user = await prisma.user.findUnique({
             where: { email: credentials.email },
           });
 
-          // Si l'utilisateur n'existe pas ou n'a pas de mot de passe (ex: auth sociale)
+          console.log("Login attempt for:", credentials.email);
+          console.log("User found:", !!user, "Has password:", !!user?.password);
+
           if (!user || !user.password) {
             return null;
           }
 
-          // Comparaison sécurisée du mot de passe fourni avec le hash stocké en base
           const isPasswordValid = await bcrypt.compare(
             credentials.password,
             user.password
           );
 
+          console.log("Password valid:", isPasswordValid);
+
           if (!isPasswordValid) {
             return null;
           }
 
-          // Si tout est bon, on retourne l'objet utilisateur (qui sera stocké dans le JWT)
+          const requires2FA = user.twoFactorEnabled || user.role === "ADMIN";
+
+          if (requires2FA && user.twoFactorSecret) {
+            const code = credentials.code;
+            if (!code) {
+              throw new Error("2FA_REQUIRED");
+            }
+
+            const isCodeValid = totp.verifyOTP(code, user.twoFactorSecret);
+            if (!isCodeValid) {
+              throw new Error("INVALID_2FA_CODE");
+            }
+          }
+
+          // Mettre à jour lastLogin et initialiser l'essai si non encore fait
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              lastLogin: new Date(),
+              // Si l'utilisateur n'a pas encore de date de fin d'essai, on la crée (J+14)
+              ...(!user.trialEndsAt ? { trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) } : {}),
+            },
+          });
+
+          console.log("Authentication successful for:", user.email);
           return {
             id: user.id,
             email: user.email,
@@ -58,56 +96,49 @@ export const authOptions: NextAuthOptions = {
             role: user.role,
           };
         } catch (e: any) {
-          console.error("Erreur d'authentification:", e);
+          console.error("Erreur d'authentification complète:", e);
+          if (e.message === "2FA_REQUIRED" || e.message === "INVALID_2FA_CODE") {
+            throw new Error(e.message);
+          }
           return null;
         }
       },
     }),
   ],
-  
-  // Clé secrète pour signer les cookies de session
+
   secret: process.env.NEXTAUTH_SECRET || "plateforme-gestion-equipe-secret-dev-2026",
-  
-  // Stratégie de session : On utilise les JWT (JSON Web Tokens)
+
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60,
   },
-  
-  // Fonctions de rappel (Callbacks) pour enrichir le jeton et la session
+
   callbacks: {
-    /**
-     * Callback JWT : Appelé lors de la création ou mise à jour du jeton.
-     */
     async jwt({ token, user, trigger, session }) {
       if (user) {
-        token.role = user.role; // On ajoute le rôle au jeton
+        token.role = user.role;
       }
-      // Permet de mettre à jour les données de session en direct via l'UI
       if (trigger === "update" && session) {
         return { ...token, ...session };
       }
       return token;
     },
-    
-    /**
-     * Callback Session : Définit les données accessibles côté client (useSession).
-     */
+
     async session({ session, token }) {
       try {
         if (token) {
           session.user.id = token.sub!;
           session.user.role = token.role as string;
-          
-          // Récupération des données fraîches depuis la base de données 
-          // pour garantir que le profil affiché est toujours à jour.
+
           const dbUser = await prisma.user.findUnique({
             where: { id: session.user.id }
           });
-          
+
           if (dbUser) {
             session.user.name = dbUser.name;
             session.user.image = dbUser.image;
             (session.user as any).role = dbUser.role;
+            (session.user as any).twoFactorEnabled = dbUser.twoFactorEnabled;
             (session.user as any).firstName = dbUser.firstName;
             (session.user as any).lastName = dbUser.lastName;
             (session.user as any).bio = dbUser.bio;
@@ -116,6 +147,12 @@ export const authOptions: NextAuthOptions = {
             (session.user as any).jobTitle = dbUser.jobTitle;
             (session.user as any).timezone = dbUser.timezone;
             (session.user as any).language = dbUser.language;
+            // ── Infos d'abonnement ──
+            (session.user as any).plan = dbUser.plan;
+            (session.user as any).subscriptionStatus = dbUser.subscriptionStatus;
+            (session.user as any).trialEndsAt = dbUser.trialEndsAt ? dbUser.trialEndsAt.toISOString() : null;
+            (session.user as any).subscriptionEndsAt = dbUser.subscriptionEndsAt ? dbUser.subscriptionEndsAt.toISOString() : null;
+            (session.user as any).isInternalAccount = dbUser.isInternalAccount;
           }
         }
         return session;
@@ -125,9 +162,8 @@ export const authOptions: NextAuthOptions = {
       }
     },
   },
-  
-  // Pages personnalisées
+
   pages: {
-    signIn: "/auth/signin", // Page de connexion personnalisée
+    signIn: "/auth/signin",
   },
 };

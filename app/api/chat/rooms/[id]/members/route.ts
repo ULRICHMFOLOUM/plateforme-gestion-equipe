@@ -1,25 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
+import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
-
-// GET - Get room members
-export async function GET(request: NextRequest, { params }: RouteParams) {
+// GET - List all members of a room with user details
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const session = await getServerSession(authOptions);
-
-    if (!session) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
+    const roomId = params.id;
     const room = await prisma.room.findUnique({
-      where: { id: params.id },
+      where: { id: roomId },
       include: {
         members: {
           include: {
@@ -29,6 +26,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
                 name: true,
                 email: true,
                 image: true,
+                jobTitle: true,
+                department: true,
               },
             },
           },
@@ -37,191 +36,143 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     });
 
     if (!room) {
-      return NextResponse.json({ error: "Conversation non trouvée" }, { status: 404 });
+      return NextResponse.json({ error: "Salon non trouvé" }, { status: 404 });
     }
 
-    // Check if user is a member
+    // Check if requester is a member of the room
     const isMember = room.members.some((m) => m.userId === session.user.id);
-
     if (!isMember) {
       return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
     }
 
-    const members = room.members.map((member) => ({
-      id: member.id,
-      userId: member.user.id,
-      name: member.user.name || member.user.email,
-      email: member.user.email,
-      avatar: member.user.name
-        ? member.user.name.split(" ").map((n: string) => n[0]).join("").toUpperCase()
-        : member.user.email.substring(0, 2).toUpperCase(),
-      image: member.user.image,
+    const members = room.members.map((m) => ({
+      id: m.user.id,
+      name: m.user.name,
+      email: m.user.email,
+      image: m.user.image,
+      jobTitle: m.user.jobTitle,
+      department: m.user.department,
+      isAdmin: room.createdById === m.user.id,
     }));
 
     return NextResponse.json({
       roomId: room.id,
-      roomName: room.name,
-      roomType: room.type,
+      name: room.name,
+      type: room.type,
+      createdById: room.createdById,
       members,
     });
-  } catch (error) {
-    console.error("Erreur lors de la récupération des membres:", error);
-    return NextResponse.json(
-      { error: "Erreur interne du serveur" },
-      { status: 500 }
-    );
+  } catch (error: any) {
+    console.error("Erreur récuperation membres salon:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-// POST - Add members to a room
-export async function POST(request: NextRequest, { params }: RouteParams) {
+// POST - Add member(s) to a room
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const session = await getServerSession(authOptions);
-
-    if (!session) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
+    const roomId = params.id;
+    const { userIds } = await req.json();
+
+    if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+      return NextResponse.json({ error: "IDs utilisateurs requis" }, { status: 400 });
+    }
+
     const room = await prisma.room.findUnique({
-      where: { id: params.id },
-      include: {
-        members: true,
-      },
+      where: { id: roomId },
+      include: { members: true },
     });
 
     if (!room) {
-      return NextResponse.json({ error: "Conversation non trouvée" }, { status: 404 });
+      return NextResponse.json({ error: "Salon introuvable" }, { status: 404 });
     }
 
-    // Check if user is a member (for DIRECT rooms, only the creator can add)
+    // Check if requester is a member of the room
     const isMember = room.members.some((m) => m.userId === session.user.id);
-    
     if (!isMember) {
-      return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+      return NextResponse.json({ error: "Vous devez être membre du groupe" }, { status: 403 });
     }
 
-    // For DIRECT rooms, only the creator can add members (to convert to GROUP)
-    if (room.type === "DIRECT") {
-      return NextResponse.json(
-        { error: "Impossible d'ajouter des membres à une conversation directe. Créez une nouvelle conversation de groupe." },
-        { status: 400 }
-      );
+    // Filter out existing members
+    const existingUserIds = new Set(room.members.map((m) => m.userId));
+    const newUserIds = userIds.filter((id: string) => !existingUserIds.has(id));
+
+    if (newUserIds.length === 0) {
+      return NextResponse.json({ message: "Les membres sont déjà dans le groupe" });
     }
 
-    const { userIds } = await request.json();
-
-    if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
-      return NextResponse.json(
-        { error: "IDs des utilisateurs requis" },
-        { status: 400 }
-      );
-    }
-
-    // Add new members
-    const newMembers = [];
-    for (const userId of userIds) {
-      // Check if user is already a member
-      const existingMember = room.members.find((m) => m.userId === userId);
-      
-      if (!existingMember) {
-        const newMember = await prisma.roomMember.create({
-          data: {
-            roomId: params.id,
-            userId: userId,
-          },
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                image: true,
-              },
-            },
-          },
-        });
-
-        newMembers.push({
-          id: newMember.id,
-          userId: newMember.user.id,
-          name: newMember.user.name || newMember.user.email,
-          email: newMember.user.email,
-          avatar: newMember.user.name
-            ? newMember.user.name.split(" ").map((n: string) => n[0]).join("").toUpperCase()
-            : newMember.user.email.substring(0, 2).toUpperCase(),
-          image: newMember.user.image,
-        });
-      }
-    }
-
-    return NextResponse.json({
-      message: `${newMembers.length} membre(s) ajouté(s)`,
-      members: newMembers,
+    // Create member records
+    await prisma.roomMember.createMany({
+      data: newUserIds.map((userId: string) => ({
+        roomId,
+        userId,
+      })),
+      skipDuplicates: true,
     });
-  } catch (error) {
-    console.error("Erreur lors de l'ajout des membres:", error);
-    return NextResponse.json(
-      { error: "Erreur interne du serveur" },
-      { status: 500 }
-    );
+
+    return NextResponse.json({ message: "Membres ajoutés avec succès" });
+  } catch (error: any) {
+    console.error("Erreur ajout membres salon:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
 // DELETE - Remove a member from a room
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const session = await getServerSession(authOptions);
-
-    if (!session) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
+    const roomId = params.id;
+    const { searchParams } = new URL(req.url);
+    const targetUserId = searchParams.get("userId");
+
+    if (!targetUserId) {
+      return NextResponse.json({ error: "ID de membre requis" }, { status: 400 });
+    }
+
     const room = await prisma.room.findUnique({
-      where: { id: params.id },
-      include: {
-        members: true,
-      },
+      where: { id: roomId },
     });
 
     if (!room) {
-      return NextResponse.json({ error: "Conversation non trouvée" }, { status: 404 });
+      return NextResponse.json({ error: "Salon introuvable" }, { status: 404 });
     }
 
-    // Check if user is a member
-    const isMember = room.members.some((m) => m.userId === session.user.id);
-    
-    if (!isMember) {
-      return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
-    }
+    // Admin privileges: Only room creator or self-leave allowed
+    const isCreator = room.createdById === session.user.id;
+    const isSelf = targetUserId === session.user.id;
 
-    const { searchParams } = new URL(request.url);
-    const memberId = searchParams.get('memberId');
-
-    if (!memberId) {
+    if (!isCreator && !isSelf) {
       return NextResponse.json(
-        { error: "ID du membre requis" },
-        { status: 400 }
+        { error: "Seul l'administrateur du groupe peut retirer un membre" },
+        { status: 403 }
       );
     }
 
-    // Check if trying to remove the room creator
-    if (room.createdById === memberId) {
-      return NextResponse.json(
-        { error: "Impossible de retirer le créateur de la conversation" },
-        { status: 400 }
-      );
-    }
-
-    await prisma.roomMember.delete({
-      where: { id: memberId },
+    await prisma.roomMember.deleteMany({
+      where: {
+        roomId,
+        userId: targetUserId,
+      },
     });
 
-    return NextResponse.json({ message: "Membre retiré avec succès" });
-  } catch (error) {
-    console.error("Erreur lors de la suppression du membre:", error);
-    return NextResponse.json(
-      { error: "Erreur interne du serveur" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Membre retiré du groupe" });
+  } catch (error: any) {
+    console.error("Erreur suppression membre salon:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

@@ -6,25 +6,20 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import LoadingScreen from "@/components/ui/LoadingScreen";
 import {
-  Users,
-  Shield,
-  BarChart3,
-  Search,
-  Filter,
-  CheckCircle,
-  Clock,
-  UserCheck,
-  UserX,
-  Plus,
-  Mail,
-  Calendar as CalendarIcon,
-  FileText,
+  Users, Shield, BarChart3, Search, Filter, CheckCircle, Clock,
+  UserCheck, UserX, Plus, Mail, Calendar as CalendarIcon, FileText,
+  Download, PieChart, Activity, Lock, Settings, Key, Zap,
+  Server, CheckCircle2, AlertTriangle, RefreshCw, Wifi,
 } from "lucide-react";
 import { Card, StatCard } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { SectionTransition, StaggeredList } from "@/components/PageTransition";
 import UserAvatar from "@/components/ui/UserAvatar";
 import DashboardWrapper from "@/components/layout/DashboardWrapper";
+import { showToast } from "@/components/ui/Toast";
+import {
+  TasksTrendChart, StatusPieChart, WorkloadBarChart, FeatureAdoptionChart,
+} from "@/components/admin/AdminCharts";
 
 interface User {
   id: string;
@@ -44,6 +39,93 @@ interface AdminStats {
   totalTasks: number;
   totalFiles: number;
   totalEvents: number;
+}
+
+function AdminMonitoringSection() {
+  const [statusData, setStatusData] = useState<any>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchStatus = async () => {
+    setRefreshing(true);
+    try {
+      const res = await fetch("/api/status");
+      if (res.ok) setStatusData(await res.json());
+    } catch (e) {}
+    finally { setRefreshing(false); }
+  };
+
+  useEffect(() => {
+    fetchStatus();
+    const t = setInterval(fetchStatus, 30000);
+    return () => clearInterval(t);
+  }, []);
+
+  const services = statusData?.services || [];
+  const overallOk = statusData?.status === "OPERATIONAL";
+
+  return (
+    <div className="space-y-4">
+      {/* Overall status banner */}
+      <div className={`flex items-center justify-between p-4 rounded-2xl border ${
+        overallOk ? "bg-emerald-950/50 border-emerald-500/20" : "bg-amber-950/50 border-amber-500/20"
+      }`}>
+        <div className="flex items-center gap-3">
+          {overallOk
+            ? <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+            : <AlertTriangle className="w-6 h-6 text-amber-400" />}
+          <div>
+            <p className={`font-black text-sm ${overallOk ? "text-emerald-300" : "text-amber-300"}`}>
+              {statusData ? (overallOk ? "Tous les systèmes opérationnels" : "Performance dégradée détectée") : "Vérification en cours..."}
+            </p>
+            <p className="text-xs text-slate-500 mt-0.5">Uptime: {statusData?.metrics?.uptime || "--"} • {new Date().toLocaleTimeString("fr-FR")}</p>
+          </div>
+        </div>
+        <button
+          onClick={fetchStatus}
+          disabled={refreshing}
+          className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-all"
+        >
+          <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+        </button>
+      </div>
+
+      {/* Services Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {services.length > 0 ? services.map((svc: any, i: number) => (
+          <div key={i} className="p-4 bg-slate-800/60 border border-slate-700/60 rounded-2xl flex items-start gap-3">
+            <div className="w-9 h-9 rounded-xl bg-slate-700 flex items-center justify-center shrink-0">
+              <Server className="w-4 h-4 text-slate-300" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-white truncate">{svc.name}</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">{svc.latency}</p>
+            </div>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
+              svc.status === "OPERATIONAL"
+                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+            }`}>
+              {svc.status === "OPERATIONAL" ? "OK" : "⚠"}
+            </span>
+          </div>
+        )) : (
+          Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="p-4 bg-slate-800/40 border border-slate-700/30 rounded-2xl animate-pulse h-16" />
+          ))
+        )}
+      </div>
+
+      {/* Webhook failures */}
+      {statusData?.metrics?.recentWebhookFailures > 0 && (
+        <div className="p-4 bg-red-950/40 border border-red-500/20 rounded-2xl flex items-center gap-3">
+          <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
+          <p className="text-xs text-red-300 font-semibold">
+            ⚠️ {statusData.metrics.recentWebhookFailures} échec(s) de webhook de paiement dans les 24 dernières heures. Vérifiez les logs Flutterwave.
+          </p>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function AdminPage() {
@@ -143,31 +225,47 @@ export default function AdminPage() {
     return matchesSearch && matchesRole;
   });
 
+  const handleExportData = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
+      exportedAt: new Date().toISOString(),
+      platform: "TeamFlows",
+      stats,
+      usersCount: users.length,
+    }, null, 2));
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `teamflows-export-rgpd-${Date.now()}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    showToast({ type: "success", title: "Exportation RGPD téléchargée !" });
+  };
+
   if (status === "loading" || (status === "authenticated" && isLoading)) return <LoadingScreen />;
   if (session?.user.role !== "ADMIN") return null;
 
   return (
     <DashboardWrapper>
-      <div className="space-y-10">
+      <div className="space-y-10 pb-16">
         
         {/* Header Section */}
         <SectionTransition>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <h1 className="text-4xl font-display font-black text-slate-900 tracking-tight">
-                Console <span className="text-blue-600">Admin</span>
+                Console <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Admin</span>
               </h1>
               <p className="text-slate-500 mt-2 font-medium flex items-center gap-2">
                 Contrôle global de la plateforme • {users.length} Utilisateurs
               </p>
             </div>
             <div className="flex items-center gap-3">
-               <Button variant="outline" className="rounded-2xl border-2">
-                  Exporter Stats
-               </Button>
-               <Button variant="primary" className="rounded-2xl shadow-xl shadow-blue-500/20" icon={Plus}>
-                  Inviter un Admin
-               </Button>
+               <button
+                  onClick={handleExportData}
+                  className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-200 text-slate-700 font-bold text-sm rounded-2xl hover:bg-slate-50 shadow-sm transition-all"
+               >
+                  <Download className="w-4 h-4 text-blue-600" /> Export RGPD
+               </button>
             </div>
           </div>
         </SectionTransition>
@@ -183,6 +281,63 @@ export default function AdminPage() {
             <StatCard icon={CalendarIcon} label="Événements" value={stats.totalEvents} color="purple" />
           </div>
         )}
+
+        {/* ── Visual Analytics (Recharts) ── */}
+        <SectionTransition delay={0.1}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Task Trends */}
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-blue-600" /> Tâches Créées vs Terminées
+                  </h3>
+                  <p className="text-xs text-slate-400 font-medium mt-0.5">Évolution hebdomadaire de la productivité</p>
+                </div>
+              </div>
+              <TasksTrendChart />
+            </div>
+
+            {/* Status Breakdown */}
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                    <PieChart className="w-5 h-5 text-indigo-600" /> Répartition des Tâches par Statut
+                  </h3>
+                  <p className="text-xs text-slate-400 font-medium mt-0.5">Proportion À faire, En cours, Terminées</p>
+                </div>
+              </div>
+              <StatusPieChart />
+            </div>
+
+            {/* Workload by member */}
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                    <Users className="w-5 h-5 text-violet-600" /> Charge de Travail par Membre
+                  </h3>
+                  <p className="text-xs text-slate-400 font-medium mt-0.5">Nombre de tâches en cours par collaborateur</p>
+                </div>
+              </div>
+              <WorkloadBarChart />
+            </div>
+
+            {/* Feature adoption */}
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                    <Zap className="w-5 h-5 text-amber-500" /> Taux d'Adoption des Fonctionnalités
+                  </h3>
+                  <p className="text-xs text-slate-400 font-medium mt-0.5">% des membres actifs utilisant chaque module</p>
+                </div>
+              </div>
+              <FeatureAdoptionChart />
+            </div>
+          </div>
+        </SectionTransition>
 
         {/* User Management Section */}
         <SectionTransition delay={0.2}>
@@ -321,6 +476,31 @@ export default function AdminPage() {
               </div>
             )}
           </Card>
+        </SectionTransition>
+
+        {/* ── Monitoring & Observabilité ── */}
+        <SectionTransition delay={0.3}>
+          <div className="bg-slate-900 rounded-3xl p-6 lg:p-8 border border-slate-800 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <h2 className="text-xl font-black text-white">Monitoring & Infrastructure</h2>
+                </div>
+                <p className="text-slate-400 text-sm">Observabilité en temps réel des services de la plateforme</p>
+              </div>
+              <a
+                href="/status"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-blue-600/25"
+              >
+                <Activity className="w-3.5 h-3.5" /> Page de Statut Public
+              </a>
+            </div>
+
+            <AdminMonitoringSection />
+          </div>
         </SectionTransition>
 
       </div>

@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { Card, StatCard } from '@/components/ui/Card';
 import UserSelector from "@/components/UserSelector";
+import UserAvatar from "@/components/ui/UserAvatar";
 import { useProjectMembers } from "@/hooks/useProjectMembers";
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
@@ -358,9 +359,15 @@ export default function ProjectMembersPage() {
                   {/* Avatar & Info */}
                   <div className="flex items-center gap-4 flex-1">
                     <div className="relative">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-500 to-amber-500 flex items-center justify-center text-white text-xl font-bold shadow-lg">
-                        {owner.avatar}
-                      </div>
+                      <UserAvatar
+                        user={{
+                          id: owner.userId,
+                          name: owner.name,
+                          email: owner.email,
+                          image: owner.image,
+                        }}
+                        size="xl"
+                      />
                       <div className="absolute -top-1 -right-1 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center">
                         <Star className="w-4 h-4 text-white fill-white" />
                       </div>
@@ -455,9 +462,15 @@ export default function ProjectMembersPage() {
                     {/* Avatar & Info */}
                     <div className="flex items-center gap-4 flex-1">
                       <div className="relative">
-                        <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${role.gradient} flex items-center justify-center text-white text-xl font-bold shadow-lg`}>
-                          {member.avatar}
-                        </div>
+                        <UserAvatar
+                          user={{
+                            id: member.userId,
+                            name: member.name,
+                            email: member.email,
+                            image: member.image,
+                          }}
+                          size="xl"
+                        />
                       </div>
 
                       <div className="flex-1">
@@ -770,9 +783,15 @@ export default function ProjectMembersPage() {
 
               {/* Member Info */}
               <div className="flex items-center gap-4 mb-6 p-4 bg-slate-50 rounded-xl">
-                <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${(roleConfig[selectedMember.role?.toLowerCase() as keyof typeof roleConfig] || roleConfig.viewer).gradient} flex items-center justify-center text-white text-xl font-bold`}>
-                  {selectedMember.avatar}
-                </div>
+                <UserAvatar
+                  user={{
+                    id: selectedMember.userId,
+                    name: selectedMember.name,
+                    email: selectedMember.email,
+                    image: selectedMember.image,
+                  }}
+                  size="xl"
+                />
                 <div>
                   <h3 className="text-lg font-semibold text-slate-900">
                     {selectedMember.name}

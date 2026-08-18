@@ -19,6 +19,7 @@ import {
 import LoadingScreen from "@/components/ui/LoadingScreen";
 import DashboardWrapper from "@/components/layout/DashboardWrapper";
 import { Card } from "@/components/ui/Card";
+import { showToast } from "@/components/ui/Toast";
 
 type NotificationType = "CONTACT_REQUEST" | "CONTACT_ACCEPTED" | "PROJECT_INVITE" | "TASK_ASSIGNED" | "TASK_COMPLETED" | "GENERAL";
 
@@ -122,19 +123,30 @@ export default function NotificationsPage() {
               Restez informé des activités et des alertes importantes.
             </p>
           </div>
-          <div className="flex items-center gap-2 bg-white/60 backdrop-blur-md p-1.5 rounded-[1.5rem] shadow-sm border border-slate-200">
-             <button 
-              onClick={() => setFilter("ALL")}
-              className={`px-6 py-2.5 rounded-2xl text-sm font-black transition-all ${filter === "ALL" ? "bg-slate-900 text-white shadow-xl" : "text-slate-500 hover:text-slate-800"}`}
-             >
-               Toutes
-             </button>
-             <button 
-              onClick={() => setFilter("UNREAD")}
-              className={`px-6 py-2.5 rounded-2xl text-sm font-black transition-all ${filter === "UNREAD" ? "bg-slate-900 text-white shadow-xl" : "text-slate-500 hover:text-slate-800"}`}
-             >
-               Non lues
-             </button>
+          <div className="flex items-center gap-3 flex-wrap">
+            <button
+              onClick={async () => {
+                setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+                showToast({ type: "success", title: "Toutes les notifications ont été marquées comme lues" });
+              }}
+              className="px-4 py-2.5 bg-white border border-slate-200 text-slate-700 font-bold text-xs rounded-2xl hover:bg-slate-50 transition-all shadow-sm flex items-center gap-1.5"
+            >
+              <Check className="w-4 h-4 text-emerald-500" /> Tout marquer comme lu
+            </button>
+            <div className="flex items-center gap-1 bg-white/60 backdrop-blur-md p-1.5 rounded-[1.5rem] shadow-sm border border-slate-200">
+               <button 
+                onClick={() => setFilter("ALL")}
+                className={`px-5 py-2 rounded-xl text-xs font-black transition-all ${filter === "ALL" ? "bg-slate-900 text-white shadow-md" : "text-slate-500 hover:text-slate-800"}`}
+               >
+                 Toutes
+               </button>
+               <button 
+                onClick={() => setFilter("UNREAD")}
+                className={`px-5 py-2 rounded-xl text-xs font-black transition-all ${filter === "UNREAD" ? "bg-slate-900 text-white shadow-md" : "text-slate-500 hover:text-slate-800"}`}
+               >
+                 Non lues
+               </button>
+            </div>
           </div>
         </div>
 

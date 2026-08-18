@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     // 1. Récupération des contacts dont le statut est 'ACCEPTED'
     const contacts = await prisma.contact.findMany({
       where: { userId: userId, status: "ACCEPTED" },
-      include: { contact: { select: { id: true, name: true, email: true, image: true } } },
+      include: { contact: { select: { id: true, name: true, email: true, image: true, jobTitle: true, department: true, bio: true, phone: true, timezone: true } } },
     });
 
     // 2. Récupération des demandes d'invitation envoyées par l'utilisateur
@@ -44,6 +44,8 @@ export async function GET(request: NextRequest) {
       id: c.id, contactId: c.contact.id, name: c.contact.name || c.contact.email, email: c.contact.email,
       avatar: c.contact.name ? c.contact.name.split(" ").map((n) => n[0]).join("").toUpperCase() : c.contact.email.substring(0, 2).toUpperCase(),
       image: c.contact.image, status: "offline" as const, isFavorite: false, createdAt: c.createdAt,
+      jobTitle: c.contact.jobTitle, department: c.contact.department, bio: c.contact.bio,
+      phone: c.contact.phone, timezone: c.contact.timezone,
     }));
 
     const formattedSentRequests = sentRequests.map((r) => ({

@@ -3,11 +3,24 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+const VALID_TYPES = ["PROGRESS", "PERFORMANCE", "FINANCIAL", "TASKS", "TEAM", "FULL", "ACTIVITY", "BUDGET"];
+
+const TYPE_MAP: Record<string, string> = {
+  PROGRESS: "PROGRESS",
+  WORKLOAD: "TEAM",
+  ACTIVITY: "ACTIVITY",
+  FINANCIAL: "FINANCIAL",
+  TASKS: "TASKS",
+  PERFORMANCE: "PERFORMANCE",
+  BUDGET: "BUDGET",
+  FULL: "FULL",
+};
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
@@ -37,9 +50,14 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(reports);
-  } catch (error) {
-    console.error("Erreur lors de la récupération des rapports:", error);
+    const transformed = reports.map(r => ({
+      ...r,
+      project: r.Project ? { name: r.Project.name } : undefined,
+    }));
+
+    return NextResponse.json(transformed);
+  } catch (error: any) {
+    console.error("Erreur lors de la récupération des rapports:", error?.message || error);
     return NextResponse.json(
       { error: "Erreur interne du serveur" },
       { status: 500 }
@@ -55,15 +73,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    const { title, type, projectId, content: extraNotes } = await request.json();
+    const body = await request.json();
+    const { title, type: rawType, projectId, content: extraNotes } = body;
 
-    if (!title || !type) {
+    if (!title) {
       return NextResponse.json(
-        { error: "Titre et type requis" },
+        { error: "Le titre est requis" },
         { status: 400 }
       );
     }
 
+    const reportType = TYPE_MAP[rawType] || (VALID_TYPES.includes(rawType) ? rawType : "PROGRESS");
     let reportContent = "";
 
     // Si un projet est sélectionné, on agrège des données réelles
@@ -75,7 +95,7 @@ export async function POST(request: NextRequest) {
           members: {
             include: {
               user: {
-                select: { name: true, email: true, role: true }
+                select: { name: true, email: true }
               }
             }
           },
@@ -89,6 +109,7 @@ export async function POST(request: NextRequest) {
 
       if (project) {
         const stats = {
+          projectName: project.name,
           totalTasks: project.tasks.length,
           todoTasks: project.tasks.filter(t => t.status === 'TODO').length,
           inProgressTasks: project.tasks.filter(t => t.status === 'IN_PROGRESS').length,
@@ -104,33 +125,43 @@ export async function POST(request: NextRequest) {
             role: m.role
           })),
           recentActivity: project.activityLogs.map(log => ({
-            action: log.action,
-            user: log.user.name,
+            action: log.details || log.action,
+            user: log.user?.name || "Utilisateur",
             at: log.createdAt
           }))
         };
 
         reportContent = JSON.stringify({
-          notes: extraNotes,
+          notes: extraNotes || "",
           projectStats: stats,
+          generatedAt: new Date().toISOString()
+        });
+      } else {
+        reportContent = JSON.stringify({
+          notes: extraNotes || "Rapport de projet.",
           generatedAt: new Date().toISOString()
         });
       }
     } else {
       reportContent = JSON.stringify({
-        notes: extraNotes || "Rapport général sur l'ensemble des activités.",
+        notes: extraNotes || "Rapport général sur l'ensemble des activités de l'équipe.",
         generatedAt: new Date().toISOString()
       });
     }
 
+    const reportData: any = {
+      title,
+      type: reportType,
+      content: reportContent,
+      userId: session.user.id,
+    };
+
+    if (projectId && projectId !== "all") {
+      reportData.projectId = projectId;
+    }
+
     const report = await prisma.report.create({
-      data: {
-        title,
-        type,
-        content: reportContent,
-        userId: session.user.id,
-        projectId: (projectId && projectId !== "all") ? projectId : undefined,
-      },
+      data: reportData,
       include: {
         Project: {
           select: { name: true }
@@ -141,11 +172,16 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    return NextResponse.json(report, { status: 201 });
-  } catch (error) {
-    console.error("Erreur création rapport:", error);
+    const transformedReport = {
+      ...report,
+      project: report.Project ? { name: report.Project.name } : undefined,
+    };
+
+    return NextResponse.json(transformedReport, { status: 201 });
+  } catch (error: any) {
+    console.error("Erreur création rapport:", error?.message || error);
     return NextResponse.json(
-      { error: "Erreur interne du serveur" },
+      { error: "Erreur lors de la création du rapport: " + (error?.message || "Erreur interne") },
       { status: 500 }
     );
   }

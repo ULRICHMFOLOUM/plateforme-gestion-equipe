@@ -44,47 +44,89 @@ model Session {
 ///  * Modèle User : Le coeur de la plateforme
 ///  * Contient les informations de profil et les relations avec tous les autres modules.
 model User {
-  id                      String            @id @default(cuid())
+  id                      String             @id @default(cuid())
   name                    String?
-  email                   String            @unique
+  email                   String             @unique
   emailVerified           DateTime?
   image                   String?
   password                String?
-  role                    Role              @default(USER)
+  role                    Role               @default(USER)
   firstName               String?
   lastName                String?
   bio                     String?
   phone                   String?
   department              String?
   jobTitle                String?
-  timezone                String?           @default("Africa/Douala")
-  language                String?           @default("fr")
-  isActive                Boolean           @default(true)
+  timezone                String?            @default("Africa/Douala")
+  language                String?            @default("fr")
+  isActive                Boolean            @default(true)
   lastLogin               DateTime?
-  createdAt               DateTime          @default(now())
-  updatedAt               DateTime          @updatedAt
+  twoFactorEnabled        Boolean            @default(false)
+  twoFactorSecret         String?
+  twoFactorConfirmedAt    DateTime?
+  // ── Abonnement ──
+  plan                    SubscriptionPlan   @default(TRIAL)
+  subscriptionStatus      SubscriptionStatus @default(ACTIVE)
+  trialEndsAt             DateTime?
+  subscriptionEndsAt      DateTime?
+  isInternalAccount       Boolean            @default(false)
+  flutterwaveCustomerId   String?
+  // ── Parrainage & Récompenses ──
+  referralCode            String?            @unique
+  referralBalance         Float              @default(0)
+  referredById            String?
+  referredBy              User?              @relation("UserReferrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referrals               User[]             @relation("UserReferrals")
+  sentReferrals           Referral[]         @relation("Referrer")
+  receivedReferrals       Referral[]         @relation("Referred")
+  testimonials            Testimonial[]
+
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @updatedAt
   accounts                Account[]
   activityLogs            ActivityLog[]
   chatMessages            ChatMessage[]
   comments                Comment[]
-  contactOf               Contact[]         @relation("ContactOf")
-  contacts                Contact[]         @relation("UserContacts")
-  receivedContactRequests ContactRequest[]  @relation("ReceivedContactRequests")
-  sentContactRequests     ContactRequest[]  @relation("SentContactRequests")
+  contactOf               Contact[]          @relation("ContactOf")
+  contacts                Contact[]          @relation("UserContacts")
+  receivedContactRequests ContactRequest[]   @relation("ReceivedContactRequests")
+  sentContactRequests     ContactRequest[]   @relation("SentContactRequests")
   events                  Event[]
   files                   File[]
+  folders                 Folder[]
   groupMembers            GroupMember[]
-  receivedMessages        Message[]         @relation("ReceivedMessages")
-  sentMessages            Message[]         @relation("SentMessages")
+  receivedMessages        Message[]          @relation("ReceivedMessages")
+  sentMessages            Message[]          @relation("SentMessages")
   notifications           Notification[]
-  ownedProjects           Project[]         @relation("OwnedProjects")
+  ownedProjects           Project[]          @relation("OwnedProjects")
+  payments                Payment[]
   reports                 Report[]
-  createdRooms            Room[]            @relation("CreatedRooms")
+  createdRooms            Room[]             @relation("CreatedRooms")
   roomMemberships         RoomMember[]
   sessions                Session[]
-  assignedTasks           Task[]            @relation("AssignedTasks")
-  tasks                   Task[]            @relation("UserTasks")
-  hostedConferences       VideoConference[] @relation("HostedConferences")
+  assignedTasks           Task[]             @relation("AssignedTasks")
+  tasks                   Task[]             @relation("UserTasks")
+  hostedConferences       VideoConference[]  @relation("HostedConferences")
+}
+
+/// *
+///  * Modèle Payment : Historique des paiements Flutterwave / Mobile Money
+model Payment {
+  id            String        @id @default(cuid())
+  userId        String
+  amount        Float
+  currency      String        @default("XAF")
+  status        PaymentStatus @default(PENDING)
+  plan          SubscriptionPlan
+  billingPeriod BillingPeriod @default(MONTHLY)
+  transactionId String?       @unique
+  flwRef        String?
+  paymentMethod String?
+  referralCode  String?
+  discountAmount Float        @default(0)
+  createdAt     DateTime      @default(now())
+  paidAt        DateTime?
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -93,6 +135,51 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+/// ── Modèle Referral : Suivi des Parrainages ──
+model Referral {
+  id             String         @id @default(cuid())
+  referrerId     String
+  referredId     String
+  status         ReferralStatus @default(PENDING)
+  rewardAmount   Float          @default(0)
+  discountApplied Float         @default(15) // % de réduction pour le filleul
+  createdAt      DateTime       @default(now())
+  convertedAt    DateTime?
+  referrer       User           @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referred       User           @relation("Referred", fields: [referredId], references: [id], onDelete: Cascade)
+}
+
+/// ── Modèle Testimonial : Témoignages clients réels ──
+model Testimonial {
+  id          String   @id @default(cuid())
+  userId      String
+  content     String
+  role        String?  // ex: CEO NovaTech, Chef de Projet
+  company     String?
+  rating      Int      @default(5)
+  isApproved  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// ── Modèle WebhookLog : Observabilité des webhooks et échecs de paiements ──
+model WebhookLog {
+  id           String   @id @default(cuid())
+  provider     String   // ex: FLUTTERWAVE, NOTCHPAY, FAPSHI
+  event        String
+  payload      String
+  status       String   // SUCCESS, FAILED, WARNING
+  errorMessage String?
+  createdAt    DateTime @default(now())
+}
+
+enum ReferralStatus {
+  PENDING
+  CONVERTED
+  REWARDED
+  EXPIRED
 }
 
 /// *
@@ -140,6 +227,7 @@ model Project {
   comments        Comment[]
   Event           Event[]
   files           File[]
+  folders         Folder[]
   members         GroupMember[]
   owner           User              @relation("OwnedProjects", fields: [ownerId], references: [id], onDelete: Cascade)
   Report          Report[]
@@ -185,9 +273,29 @@ model File {
   userId     String
   projectId  String?
   taskId     String?
+  folderId   String?
+  folder     Folder?  @relation(fields: [folderId], references: [id], onDelete: Cascade)
   project    Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
   task       Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// ── Modèle Folder : Hiérarchie de dossiers et sous-dossiers ──
+model Folder {
+  id             String   @id @default(cuid())
+  name           String
+  color          String?  @default("blue")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  userId         String
+  projectId      String?
+  parentFolderId String?
+
+  parentFolder Folder?  @relation("SubFolders", fields: [parentFolderId], references: [id], onDelete: Cascade)
+  subFolders   Folder[] @relation("SubFolders")
+  files        File[]
+  project      Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 /// *
@@ -446,4 +554,30 @@ enum TaskStatus {
   TODO
   IN_PROGRESS
   DONE
+}
+
+enum SubscriptionPlan {
+  TRIAL
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELED
+  INACTIVE
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum BillingPeriod {
+  MONTHLY
+  YEARLY
 }

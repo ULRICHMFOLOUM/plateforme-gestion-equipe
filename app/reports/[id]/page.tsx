@@ -7,25 +7,15 @@ import { useRouter, useParams } from "next/navigation";
 import LoadingScreen from "@/components/ui/LoadingScreen";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft,
-  Calendar,
-  Users,
-  Target,
-  BarChart3,
-  TrendingUp,
-  PieChart,
-  DollarSign,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  Download,
-  Printer,
-  Share2,
-  Activity,
+  ArrowLeft, Calendar, Users, Target, BarChart3, TrendingUp,
+  PieChart, DollarSign, Clock, CheckCircle2, AlertCircle,
+  Download, Printer, Share2, Activity, FileSpreadsheet, FileText, Code, Sparkles,
 } from "lucide-react";
 import DashboardWrapper from "@/components/layout/DashboardWrapper";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { showToast } from "@/components/ui/Toast";
+import { generateCSVReport, generateExcelReport, generateHTMLReport, downloadReportFile, ReportData } from "@/lib/reports";
 
 interface ReportDetail {
   id: string;
@@ -33,13 +23,8 @@ interface ReportDetail {
   type: string;
   createdAt: string;
   content: string;
-  project?: {
-    name: string;
-  };
-  user: {
-    name: string;
-    email: string;
-  };
+  project?: { name: string };
+  user: { name: string; email: string };
 }
 
 export default function ReportDetailPage() {
@@ -51,9 +36,7 @@ export default function ReportDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/signin");
-    }
+    if (status === "unauthenticated") router.push("/auth/signin");
   }, [status, router]);
 
   useEffect(() => {
@@ -79,21 +62,69 @@ export default function ReportDetailPage() {
       }
     };
 
-    if (status === "authenticated") {
-      fetchReport();
-    }
+    if (status === "authenticated") fetchReport();
   }, [id, status]);
 
   if (loading || status === "loading") return <LoadingScreen />;
-  if (!report) return <div className="p-20 text-center">Rapport non trouvé.</div>;
+  if (!report) return <div className="p-20 text-center text-slate-500 font-bold">Rapport non trouvé.</div>;
 
   const stats = parsedData?.projectStats;
+
+  const handleExport = (format: "pdf" | "xls" | "csv" | "json") => {
+    const reportDataPayload: ReportData = {
+      id: report.id,
+      title: report.title,
+      type: report.type,
+      generatedAt: report.createdAt,
+      projectName: report.project?.name,
+      stats: {
+        totalTasks: stats?.totalTasks || 0,
+        completedTasks: stats?.doneTasks || 0,
+        inProgressTasks: stats?.inProgressTasks || 0,
+        todoTasks: stats?.todoTasks || 0,
+        progress: stats?.progress || 0,
+        budget: stats?.budget,
+        spent: stats?.spent,
+      },
+      membersWorkload: stats?.members?.map((m: any) => ({
+        name: m.name,
+        role: m.role,
+        assignedTasks: stats?.totalTasks || 0,
+        completedTasks: stats?.doneTasks || 0,
+      })),
+      activityLogs: stats?.recentActivity?.map((a: any) => ({
+        action: a.action,
+        user: a.user,
+        date: new Date(a.at).toLocaleDateString("fr-FR"),
+      })),
+      notes: parsedData?.notes || report.content,
+    };
+
+    const filename = `Rapport_${report.title.replace(/[^a-zA-Z0-9]/g, "_")}`;
+
+    if (format === "pdf") {
+      const html = generateHTMLReport(reportDataPayload);
+      downloadReportFile(filename, html, "pdf");
+    } else if (format === "xls") {
+      const xml = generateExcelReport(reportDataPayload);
+      downloadReportFile(filename, xml, "xls");
+      showToast({ type: "success", title: "Export Excel généré !", message: "Le fichier .xls est téléchargé." });
+    } else if (format === "csv") {
+      const csv = generateCSVReport(reportDataPayload);
+      downloadReportFile(filename, csv, "csv");
+      showToast({ type: "success", title: "Export CSV généré !", message: "Le fichier .csv est téléchargé." });
+    } else if (format === "json") {
+      const json = JSON.stringify(reportDataPayload, null, 2);
+      downloadReportFile(filename, json, "json");
+      showToast({ type: "success", title: "Export JSON généré !" });
+    }
+  };
 
   return (
     <DashboardWrapper>
       <div className="max-w-6xl mx-auto space-y-10 pb-20">
-        {/* Navigation & Actions */}
-        <div className="flex items-center justify-between no-print">
+        {/* Navigation & Format Export Bar */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 no-print bg-white/80 backdrop-blur-xl p-4 rounded-3xl border border-slate-100 shadow-sm">
           <button
             onClick={() => router.back()}
             className="flex items-center gap-2 text-slate-500 hover:text-slate-900 font-bold transition-all group"
@@ -103,18 +134,41 @@ export default function ReportDetailPage() {
             </div>
             Retour aux rapports
           </button>
-          <div className="flex gap-3">
-            <Button variant="ghost" className="rounded-xl border border-slate-200" onClick={() => window.print()}>
-              <Printer className="w-4 h-4 mr-2" /> Imprimer
-            </Button>
-            <Button variant="primary" className="rounded-xl shadow-xl shadow-blue-500/10">
-              <Download className="w-4 h-4 mr-2" /> Exporter PDF
-            </Button>
+
+          {/* Format buttons */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs font-black uppercase tracking-wider text-slate-400 mr-1 flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Exporter :
+            </span>
+            <button
+              onClick={() => handleExport("pdf")}
+              className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg shadow-blue-500/20 hover:shadow-xl transition-all"
+            >
+              <Printer className="w-4 h-4" /> PDF / Imprimer
+            </button>
+            <button
+              onClick={() => handleExport("xls")}
+              className="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-emerald-100 transition-all"
+            >
+              <FileSpreadsheet className="w-4 h-4" /> Excel (.xls)
+            </button>
+            <button
+              onClick={() => handleExport("csv")}
+              className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 text-slate-700 border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-slate-200 transition-all"
+            >
+              <FileText className="w-4 h-4" /> CSV
+            </button>
+            <button
+              onClick={() => handleExport("json")}
+              className="flex items-center gap-2 px-4 py-2.5 bg-violet-50 text-violet-700 border border-violet-200 rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-violet-100 transition-all"
+            >
+              <Code className="w-4 h-4" /> JSON
+            </button>
           </div>
         </div>
 
-        {/* Report Header */}
-        <div className="relative overflow-hidden bg-slate-900 rounded-[3rem] p-10 md:p-16 text-white shadow-2xl">
+        {/* Report Header Banner */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-[3rem] p-10 md:p-16 text-white shadow-2xl">
           <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-blue-500/20 to-transparent pointer-events-none" />
           <div className="relative z-10 space-y-6">
             <div className="flex items-center gap-3">
@@ -123,7 +177,7 @@ export default function ReportDetailPage() {
               </span>
               <span className="flex items-center gap-2 text-blue-200 text-sm font-bold">
                 <Calendar className="w-4 h-4" />
-                Dernière mise à jour : {new Date(report.createdAt).toLocaleDateString("fr-FR")}
+                Généré le : {new Date(report.createdAt).toLocaleDateString("fr-FR", { day: '2-digit', month: 'long', year: 'numeric' })}
               </span>
             </div>
             <h1 className="text-4xl md:text-6xl font-display font-black tracking-tight leading-tight">
@@ -132,200 +186,142 @@ export default function ReportDetailPage() {
             <div className="flex flex-wrap items-center gap-8 pt-4 border-t border-white/10">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center">
-                  <Target className="w-6 h-6" />
+                  <Target className="w-6 h-6 text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-white/50 font-black uppercase tracking-widest">Projet</p>
-                  <p className="font-bold">{report.project?.name || "Général"}</p>
+                  <p className="text-xs text-white/50 font-black uppercase tracking-widest">Projet Concerné</p>
+                  <p className="font-bold text-lg">{report.project?.name || "Tous les projets"}</p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center">
-                  <Clock className="w-6 h-6" />
+                  <Clock className="w-6 h-6 text-emerald-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-white/50 font-black uppercase tracking-widest">Période</p>
-                  <p className="font-bold">Analyse Temporelle Q2</p>
+                  <p className="text-xs text-white/50 font-black uppercase tracking-widest">Auteur du rapport</p>
+                  <p className="font-bold text-lg">{report.user?.name || report.user?.email}</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Executive Summary Grid */}
+        {/* Colorful Metric Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <Card className="p-8 border-2 border-white bg-white/60 backdrop-blur-xl rounded-[2.5rem] shadow-xl">
+          <Card className="p-8 border-2 border-white bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-xl">
             <div className="flex items-center justify-between mb-8">
-              <div className="w-14 h-14 bg-blue-100 rounded-3xl flex items-center justify-center">
-                <TrendingUp className="w-7 h-7 text-blue-600" />
+              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <TrendingUp className="w-7 h-7 text-white" />
               </div>
-              <span className="text-3xl font-display font-black text-blue-600">{stats?.progress || 0}%</span>
+              <span className="text-4xl font-display font-black text-blue-600">{stats?.progress || 0}%</span>
             </div>
-            <h3 className="text-lg font-black text-slate-800 uppercase tracking-widest mb-2">Progrès Réel</h3>
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Progression Globale</h3>
             <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-              <motion.div initial={{ width: 0 }} animate={{ width: `${stats?.progress || 0}%` }} className="h-full bg-blue-500" />
+              <motion.div initial={{ width: 0 }} animate={{ width: `${stats?.progress || 0}%` }} className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full" />
             </div>
-            <p className="mt-4 text-sm text-slate-500 font-medium">Basé sur le taux de complétion des tâches.</p>
+            <p className="mt-4 text-xs text-slate-400 font-bold">Avancement réel calculé du projet</p>
           </Card>
 
-          <Card className="p-8 border-2 border-white bg-white/60 backdrop-blur-xl rounded-[2.5rem] shadow-xl">
+          <Card className="p-8 border-2 border-white bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-xl">
             <div className="flex items-center justify-between mb-8">
-              <div className="w-14 h-14 bg-emerald-100 rounded-3xl flex items-center justify-center">
-                <CheckCircle2 className="w-7 h-7 text-emerald-600" />
+              <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                <CheckCircle2 className="w-7 h-7 text-white" />
               </div>
-              <span className="text-3xl font-display font-black text-emerald-600">{stats?.doneTasks || 0}</span>
+              <span className="text-4xl font-display font-black text-emerald-600">{stats?.doneTasks || 0}</span>
             </div>
-            <h3 className="text-lg font-black text-slate-800 uppercase tracking-widest mb-2">Tâches Finies</h3>
-            <p className="text-sm text-slate-500 font-medium">Sur un total de {stats?.totalTasks || 0} tâches assignées.</p>
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Tâches Terminées</h3>
+            <p className="text-xs text-slate-400 font-bold">Sur un total de {stats?.totalTasks || 0} tâches enregistrées</p>
           </Card>
 
-          <Card className="p-8 border-2 border-white bg-white/60 backdrop-blur-xl rounded-[2.5rem] shadow-xl">
+          <Card className="p-8 border-2 border-white bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-xl">
             <div className="flex items-center justify-between mb-8">
-              <div className="w-14 h-14 bg-amber-100 rounded-3xl flex items-center justify-center">
-                <DollarSign className="w-7 h-7 text-amber-600" />
+              <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-600 rounded-3xl flex items-center justify-center shadow-lg shadow-amber-500/30">
+                <DollarSign className="w-7 h-7 text-white" />
               </div>
-              <span className="text-2xl font-display font-black text-amber-600">
+              <span className="text-3xl font-display font-black text-amber-600">
                 {stats?.spent ? `${stats.spent.toLocaleString()} €` : "N/A"}
               </span>
             </div>
-            <h3 className="text-lg font-black text-slate-800 uppercase tracking-widest mb-2">Budget Consommé</h3>
-            <p className="text-sm text-slate-500 font-medium">Budget total : {stats?.budget ? `${stats.budget.toLocaleString()} €` : "--"}</p>
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Budget Consommé</h3>
+            <p className="text-xs text-slate-400 font-bold">Budget alloué : {stats?.budget ? `${stats.budget.toLocaleString()} €` : "--"}</p>
           </Card>
         </div>
 
         {/* Detailed Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* Main Content Column */}
           <div className="lg:col-span-2 space-y-10">
             <Card className="p-10 border-2 border-white bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-xl">
-              <h3 className="text-2xl font-black text-slate-900 mb-8 flex items-center gap-3">
+              <h3 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-3">
                 <Activity className="w-6 h-6 text-blue-500" />
-                Analyse Qualitative
+                Synthèse Qualitative & Remarques
               </h3>
               <div className="prose prose-slate max-w-none">
-                <p className="text-slate-600 leading-relaxed text-lg whitespace-pre-wrap">
+                <p className="text-slate-700 leading-relaxed text-base font-medium whitespace-pre-wrap">
                   {parsedData?.notes || report.content}
                 </p>
-                {stats && (
-                  <div className="mt-10 p-8 bg-slate-50 rounded-3xl border border-slate-100 italic text-slate-500 font-medium leading-relaxed">
-                    "Ce rapport a été généré automatiquement à partir de l'activité réelle du projet. 
-                    Les indicateurs reflètent l'état actuel des tâches, des ressources et des engagements financiers au {new Date(report.createdAt).toLocaleDateString()}."
-                  </div>
-                )}
+                <div className="mt-8 p-6 bg-slate-50 rounded-3xl border border-slate-100 text-xs text-slate-500 font-bold leading-relaxed">
+                  🔒 Document officiel généré et certifié par l'algorithme d'analyse TeamFlows le {new Date(report.createdAt).toLocaleDateString("fr-FR")}.
+                </div>
               </div>
             </Card>
 
-            {/* Task Breakdown */}
+            {/* Task Breakdown visual bar */}
             <Card className="p-10 border-2 border-white bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-xl">
-              <h3 className="text-2xl font-black text-slate-900 mb-8 flex items-center gap-3">
+              <h3 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-3">
                 <BarChart3 className="w-6 h-6 text-indigo-500" />
-                Répartition des Tâches
+                Répartition des Tâches par Statut
               </h3>
-              <div className="space-y-6">
+              <div className="space-y-5">
                 {[
-                  { label: "Terminées", count: stats?.doneTasks || 0, color: "bg-emerald-500", total: stats?.totalTasks || 1 },
-                  { label: "En cours", count: stats?.inProgressTasks || 0, color: "bg-blue-500", total: stats?.totalTasks || 1 },
-                  { label: "À faire", count: stats?.todoTasks || 0, color: "bg-slate-300", total: stats?.totalTasks || 1 },
-                ].map((item, i) => (
-                  <div key={i} className="space-y-2">
-                    <div className="flex justify-between text-sm font-bold uppercase tracking-wider text-slate-600">
-                      <span>{item.label}</span>
-                      <span>{Math.round((item.count / item.total) * 100)}%</span>
+                  { label: "Terminées", count: stats?.doneTasks || 0, color: "from-emerald-500 to-teal-500", total: stats?.totalTasks || 1 },
+                  { label: "En cours", count: stats?.inProgressTasks || 0, color: "from-blue-500 to-indigo-500", total: stats?.totalTasks || 1 },
+                  { label: "À faire", count: stats?.todoTasks || 0, color: "from-slate-300 to-slate-400", total: stats?.totalTasks || 1 },
+                ].map((item, i) => {
+                  const pct = Math.round((item.count / item.total) * 100);
+                  return (
+                    <div key={i} className="space-y-2">
+                      <div className="flex justify-between text-xs font-black uppercase tracking-wider text-slate-600">
+                        <span>{item.label} ({item.count})</span>
+                        <span>{pct}%</span>
+                      </div>
+                      <div className="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${pct}%` }}
+                          className={`h-full bg-gradient-to-r ${item.color} rounded-full`}
+                        />
+                      </div>
                     </div>
-                    <div className="w-full h-4 bg-slate-100 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${(item.count / item.total) * 100}%` }}
-                        className={`h-full ${item.color}`}
-                      />
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </Card>
           </div>
 
-          {/* Sidebar Info */}
-          <div className="space-y-10">
-            {/* Team */}
+          {/* Sidebar */}
+          <div className="space-y-8">
             <Card className="p-8 border-2 border-white bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-xl">
               <h3 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-3">
                 <Users className="w-5 h-5 text-purple-500" />
-                Membres Actifs
+                Équipe & Intervenants
               </h3>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {stats?.members?.map((m: any, i: number) => (
-                  <div key={i} className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-bold text-slate-500">
+                  <div key={i} className="flex items-center gap-3 p-2 bg-slate-50 rounded-2xl">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center font-black text-white text-xs">
                       {m.name.charAt(0)}
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-slate-900 truncate">{m.name}</p>
-                      <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{m.role}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-black text-slate-900 truncate">{m.name}</p>
+                      <p className="text-[9px] font-bold uppercase text-slate-400">{m.role || "Membre"}</p>
                     </div>
                   </div>
                 ))}
-                {!stats?.members && <p className="text-sm text-slate-400 font-medium italic">Aucun membre répertorié.</p>}
-              </div>
-            </Card>
-
-            {/* Financial Status */}
-            <Card className="p-8 border-2 border-white bg-blue-900 text-white rounded-[2.5rem] shadow-xl overflow-hidden relative">
-              <DollarSign className="absolute -bottom-10 -right-10 w-40 h-40 text-white/5 pointer-events-none" />
-              <h3 className="text-xl font-black mb-6 flex items-center gap-3">
-                <TrendingUp className="w-5 h-5 text-blue-400" />
-                État Financier
-              </h3>
-              <div className="space-y-6">
-                <div>
-                  <p className="text-xs text-blue-300 font-black uppercase tracking-widest mb-1">Reste à dépenser</p>
-                  <p className="text-3xl font-display font-black">
-                    {stats?.budget && stats?.spent ? (stats.budget - stats.spent).toLocaleString() : "--"} €
-                  </p>
-                </div>
-                <div className="pt-4 border-t border-white/10">
-                  <div className="flex justify-between text-xs font-bold mb-2">
-                    <span>Efficacité budgétaire</span>
-                    <span>Hautement Stable</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                    <div className="w-[85%] h-full bg-blue-400" />
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            {/* Activity Timeline */}
-            <Card className="p-8 border-2 border-white bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-xl">
-              <h3 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-3">
-                <Activity className="w-5 h-5 text-emerald-500" />
-                Derniers Jalons
-              </h3>
-              <div className="space-y-6">
-                {stats?.recentActivity?.map((log: any, i: number) => (
-                  <div key={i} className="relative pl-6 border-l-2 border-slate-100 last:border-0 pb-1">
-                    <div className="absolute left-[-9px] top-0 w-4 h-4 rounded-full bg-white border-2 border-blue-500" />
-                    <p className="text-[11px] font-black text-blue-500 uppercase tracking-widest mb-1">
-                      {new Date(log.at).toLocaleDateString("fr-FR")}
-                    </p>
-                    <p className="text-sm font-bold text-slate-800">{log.action}</p>
-                    <p className="text-xs text-slate-400">{log.user}</p>
-                  </div>
-                ))}
-                {!stats?.recentActivity && <p className="text-sm text-slate-400 font-medium italic">Aucune activité récente.</p>}
               </div>
             </Card>
           </div>
         </div>
       </div>
-
-      <style jsx global>{`
-        @media print {
-          .no-print { display: none !important; }
-          body { background: white !important; }
-          .dashboard-wrapper { padding: 0 !important; }
-        }
-      `}</style>
     </DashboardWrapper>
   );
 }

@@ -94,6 +94,7 @@ export default async function ProjectsPage() {
       owner: {
         id: project.owner.id,
         name: project.owner.name || project.owner.email,
+        image: project.owner.image,
         avatar: project.owner.name
           ? project.owner.name
               .split(" ")
@@ -105,6 +106,7 @@ export default async function ProjectsPage() {
       members: project.members.map((m) => ({
         id: m.user.id,
         name: m.user.name || m.user.email,
+        image: m.user.image,
         avatar: m.user.name
           ? m.user.name
               .split(" ")

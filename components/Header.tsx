@@ -27,6 +27,7 @@ import { useSearch } from "@/context/SearchContext";
 import { useSidebar } from "@/context/SidebarContext";
 import NotificationBell from "./NotificationBell";
 import UserAvatar from "./ui/UserAvatar";
+import TrialBanner from "./ui/TrialBanner";
 
 interface SearchResult {
   projects: Array<{ id: string; name: string; description?: string; status: string; color: string }>;
@@ -189,6 +190,11 @@ export default function Header() {
 
   return (
     <>
+      <TrialBanner
+        plan={(session.user as any).plan || "TRIAL"}
+        trialEndsAt={(session.user as any).trialEndsAt}
+        isInternalAccount={(session.user as any).isInternalAccount}
+      />
       <motion.header
         style={{ backgroundColor: headerBg, borderColor: headerBorder }}
         className="fixed top-0 right-0 left-0 md:left-72 z-50 backdrop-blur-md border-b transition-colors duration-300 h-20"
@@ -361,16 +367,15 @@ export default function Header() {
                   onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                   className="flex items-center gap-3 p-1.5 pr-3 rounded-2xl hover:bg-slate-100/80 transition-all border border-transparent hover:border-slate-200"
                 >
-                  {/* Avatar in header — uses local API-fresh state */}
-                  <div className="w-8 h-8 rounded-xl overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
-                    {userImage && (userImage.startsWith('http') || userImage.startsWith('data:image')) ? (
-                      <img src={userImage} alt="Avatar" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-white text-xs font-black">
-                        {(userName || session?.user?.name || session?.user?.email || '?').substring(0, 2).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
+                  {/* Avatar in header — uses centralized UserAvatar */}
+                  <UserAvatar
+                    src={userImage}
+                    name={userName || session?.user?.name}
+                    userId={session?.user?.id}
+                    size="sm"
+                    showStatus={true}
+                    status="online"
+                  />
                   <div className="hidden sm:block text-left">
                     <p className="text-sm font-bold text-slate-900 leading-none">
                       {(userName || session?.user?.name)?.split(" ")[0]}
@@ -412,7 +417,10 @@ export default function Header() {
                           </Link>
                           <div className="my-2 border-t border-slate-100" />
                           <button
-                            onClick={() => signOut({ callbackUrl: "/" })}
+                            onClick={async () => {
+                              await signOut({ redirect: false });
+                              window.location.href = "/";
+                            }}
                             className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 rounded-xl transition-all"
                           >
                             <LogOut className="w-4 h-4" /> Déconnexion

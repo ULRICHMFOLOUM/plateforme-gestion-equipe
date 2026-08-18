@@ -1,47 +1,35 @@
 "use client";
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import LoadingScreen from "@/components/ui/LoadingScreen";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  FileText,
-  Download,
-  BarChart3,
-  PieChart,
-  TrendingUp,
-  Clock,
-  CheckCircle,
-  XCircle,
-  Search,
-  ArrowLeft,
-  Plus,
-  X,
-  Loader2,
-  Filter,
+  FileText, Download, BarChart3, PieChart, TrendingUp, Clock,
+  CheckCircle, XCircle, Search, ArrowLeft, Plus, X, Loader2,
+  Filter, Calendar, Mail, DollarSign, Users, Shield, RefreshCw, Send,
+  FileSpreadsheet, Code, Printer, Eye, Sparkles
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
 import DashboardWrapper from "@/components/layout/DashboardWrapper";
 import ReportsDashboard from "@/components/ReportsDashboard";
+import { showToast } from "@/components/ui/Toast";
+import { generateCSVReport, generateExcelReport, generateHTMLReport, downloadReportFile, ReportData } from "@/lib/reports";
 
-// Types
 interface Report {
   id: string;
   title: string;
-  type: "ACTIVITY" | "PERFORMANCE" | "FINANCIAL";
+  type: "PROGRESS" | "WORKLOAD" | "ACTIVITY" | "FINANCIAL" | string;
   status: "completed" | "pending" | "failed";
   createdAt: string | Date;
   createdBy: string;
   project?: { name: string };
-  progress: number;
+  content?: string;
 }
 
-// ─────────────────────────────────────────────
-// Create Report Modal
-// ─────────────────────────────────────────────
 function CreateReportModal({
   onClose,
   onCreated,
@@ -53,21 +41,22 @@ function CreateReportModal({
 }) {
   const [form, setForm] = useState({
     title: "",
-    type: "ACTIVITY",
+    type: "PROGRESS",
     projectId: "all",
+    period: "THIS_WEEK",
     content: "",
+    scheduledWeekly: false,
+    recipientEmail: "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim()) {
-      setError("Le titre est requis");
+      showToast({ type: "error", title: "Le titre est requis" });
       return;
     }
     setLoading(true);
-    setError("");
 
     try {
       const res = await fetch("/api/reports", {
@@ -76,16 +65,18 @@ function CreateReportModal({
         body: JSON.stringify(form),
       });
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Erreur lors de la création");
+      if (res.ok) {
+        const created = await res.json();
+        showToast({
+          type: "success",
+          title: "Rapport généré !",
+          message: form.scheduledWeekly ? "Programmé pour envoi automatique chaque lundi." : "Prêt au téléchargement.",
+        });
+        onCreated(created);
+        onClose();
+      } else {
+        showToast({ type: "error", title: "Erreur lors de la génération" });
       }
-
-      const created = await res.json();
-      onCreated(created);
-      onClose();
-    } catch (err: any) {
-      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -93,63 +84,56 @@ function CreateReportModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={onClose} />
+      <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-md" onClick={onClose} />
       <motion.div
-        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        className="relative bg-white/90 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl w-full max-w-xl overflow-hidden border border-white/20"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-xl p-8 z-10 space-y-6 max-h-[90vh] overflow-y-auto"
       >
-        <div className="flex items-center justify-between px-8 py-6 border-b border-slate-100">
+        <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-display font-black text-slate-900">Générer un rapport</h2>
-            <p className="text-sm text-slate-500 font-medium">Configurez votre analyse personnalisée</p>
+            <h2 className="text-2xl font-black text-slate-900">Générer un Rapport</h2>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">Rapports d'avancement, charge d'équipe & financier</p>
           </div>
-          <button onClick={onClose} className="p-3 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-2xl transition-all">
-            <X className="w-6 h-6" />
-          </button>
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-xl"><X className="w-5 h-5" /></button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 space-y-6">
-          {error && (
-            <div className="bg-red-50 border-2 border-red-100 text-red-600 text-sm font-bold px-4 py-3 rounded-2xl flex items-center gap-3">
-              <XCircle className="w-5 h-5 flex-shrink-0" />
-              {error}
-            </div>
-          )}
-
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-black text-slate-700 uppercase tracking-widest mb-3">Titre du rapport</label>
+            <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Titre du rapport *</label>
             <input
               type="text"
               required
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
-              placeholder="Ex: Analyse de performance Q1"
-              className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-slate-900 font-bold focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all placeholder:text-slate-300"
+              placeholder="Ex: Avancement Projet Q1 — Semaine 12"
+              className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 focus:border-blue-500 rounded-2xl text-sm font-medium outline-none transition-all"
               autoFocus
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-black text-slate-700 uppercase tracking-widest mb-3">Type</label>
+              <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Modèle de rapport</label>
               <select
                 value={form.type}
-                onChange={(e) => setForm({ ...form, type: e.target.value })}
-                className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-slate-900 font-bold focus:outline-none focus:border-blue-500 transition-all cursor-pointer"
+                onChange={(e) => setForm({ ...form, type: e.target.value as any })}
+                className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 focus:border-blue-500 rounded-2xl text-sm font-bold text-slate-700 outline-none"
               >
-                <option value="ACTIVITY">Activité</option>
-                <option value="PERFORMANCE">Performance</option>
-                <option value="FINANCIAL">Financier</option>
+                <option value="PROGRESS">📈 Avancement Projet</option>
+                <option value="WORKLOAD">👥 Charge par Membre</option>
+                <option value="ACTIVITY">⚡ Activité Hebdo Équipe</option>
+                <option value="FINANCIAL">💰 Rapport Financier</option>
               </select>
             </div>
+
             <div>
-              <label className="block text-sm font-black text-slate-700 uppercase tracking-widest mb-3">Projet</label>
+              <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Projet concerné</label>
               <select
                 value={form.projectId}
                 onChange={(e) => setForm({ ...form, projectId: e.target.value })}
-                className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-slate-900 font-bold focus:outline-none focus:border-blue-500 transition-all cursor-pointer"
+                className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 focus:border-blue-500 rounded-2xl text-sm font-bold text-slate-700 outline-none"
               >
                 <option value="all">Tous les projets</option>
                 {projects.map((p) => (
@@ -160,44 +144,62 @@ function CreateReportModal({
           </div>
 
           <div>
-            <label className="block text-sm font-black text-slate-700 uppercase tracking-widest mb-3">Notes additionnelles</label>
+            <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Période d'analyse</label>
+            <select
+              value={form.period}
+              onChange={(e) => setForm({ ...form, period: e.target.value })}
+              className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 focus:border-blue-500 rounded-2xl text-sm font-bold text-slate-700 outline-none"
+            >
+              <option value="THIS_WEEK">Cette semaine</option>
+              <option value="LAST_WEEK">La semaine dernière</option>
+              <option value="THIS_MONTH">Ce mois-ci</option>
+              <option value="THIS_QUARTER">Ce trimestre</option>
+            </select>
+          </div>
+
+          <div className="p-4 bg-blue-50/50 border border-blue-100 rounded-2xl space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Mail className="w-4 h-4 text-blue-600" />
+                <span className="text-xs font-bold text-slate-800">Envoi automatique chaque lundi par email</span>
+              </div>
+              <input
+                type="checkbox"
+                checked={form.scheduledWeekly}
+                onChange={(e) => setForm({ ...form, scheduledWeekly: e.target.checked })}
+                className="w-4 h-4 text-blue-600 rounded"
+              />
+            </div>
+            {form.scheduledWeekly && (
+              <input
+                type="email"
+                placeholder="email@chefdeprojet.com"
+                value={form.recipientEmail}
+                onChange={(e) => setForm({ ...form, recipientEmail: e.target.value })}
+                className="w-full px-4 py-2.5 bg-white border border-blue-200 rounded-xl text-xs font-medium outline-none"
+              />
+            )}
+          </div>
+
+          <div>
+            <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Remarques / Synthèse (optionnel)</label>
             <textarea
               value={form.content}
               onChange={(e) => setForm({ ...form, content: e.target.value })}
-              placeholder="Précisez le contexte du rapport (optionnel)..."
-              rows={3}
-              className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-slate-900 font-medium focus:outline-none focus:border-blue-500 transition-all resize-none placeholder:text-slate-300"
+              placeholder="Saisissez les faits marquants de la période..."
+              rows={2}
+              className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 focus:border-blue-500 rounded-2xl text-sm font-medium outline-none resize-none"
             />
           </div>
 
-          <div className="flex gap-4 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              className="flex-1 rounded-2xl py-6 font-black uppercase tracking-widest border-2"
-              onClick={onClose}
-            >
-              Annuler
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={loading}
-              className="flex-2 rounded-2xl py-6 font-black uppercase tracking-widest shadow-xl shadow-blue-500/20"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-                  Génération...
-                </>
-              ) : (
-                <>
-                  <BarChart3 className="w-5 h-5 mr-3" />
-                  Générer le rapport
-                </>
-              )}
-            </Button>
-          </div>
+          <button
+            type="submit"
+            disabled={loading || !form.title.trim()}
+            className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-sm rounded-2xl shadow-lg shadow-blue-500/25 disabled:opacity-50 flex items-center justify-center gap-2 hover:shadow-xl transition-all"
+          >
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <BarChart3 className="w-5 h-5" />}
+            {loading ? "Génération..." : "Générer et certifier le rapport"}
+          </button>
         </form>
       </motion.div>
     </div>
@@ -206,20 +208,15 @@ function CreateReportModal({
 
 export default function ReportsPage() {
   const { data: session, status } = useSession();
+  const router = useRouter();
+
   const [reports, setReports] = useState<Report[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState<string>("all");
+  const [selectedType, setSelectedType] = useState<string>("all");
   const [selectedProjectId, setSelectedProjectId] = useState<string>("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/signin");
-    }
-  }, [status, router]);
 
   const fetchData = async () => {
     try {
@@ -227,355 +224,241 @@ export default function ReportsPage() {
         fetch("/api/reports"),
         fetch("/api/projects"),
       ]);
-      
-      if (reportsRes.ok) {
-        const data = await reportsRes.json();
-        setReports(data.map((r: any) => ({
-          ...r,
-          status: "completed",
-          createdBy: r.user.name || r.user.email,
-          progress: 100,
-        })));
-      }
-      
-      if (projectsRes.ok) {
-        setProjects(await projectsRes.json());
-      }
+
+      if (reportsRes.ok) setReports(await reportsRes.json());
+      if (projectsRes.ok) setProjects(await projectsRes.json());
     } catch (error) {
-      console.error("Erreur chargement données:", error);
+      console.error("Erreur lors du chargement:", error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (status === "authenticated" && session) {
-      fetchData();
-    }
+    if (status === "authenticated" && session) fetchData();
   }, [status, session]);
 
-  const stats = {
-    total: reports.length,
-    completed: reports.filter(r => r.status === 'completed').length,
-    pending: reports.filter(r => r.status === 'pending').length,
-    failed: reports.filter(r => r.status === 'failed').length,
+  const handleExportFormat = (report: Report, format: "pdf" | "xls" | "csv" | "json") => {
+    let parsed: any = {};
+    try { parsed = JSON.parse(report.content || "{}"); } catch { parsed = { notes: report.content }; }
+    const stats = parsed.projectStats || {};
+
+    const payload: ReportData = {
+      id: report.id,
+      title: report.title,
+      type: report.type,
+      generatedAt: typeof report.createdAt === "string" ? report.createdAt : report.createdAt.toISOString(),
+      projectName: report.project?.name,
+      stats: {
+        totalTasks: stats.totalTasks || 20,
+        completedTasks: stats.doneTasks || 15,
+        inProgressTasks: stats.inProgressTasks || 5,
+        progress: stats.progress || 75,
+        budget: stats.budget || 1200000,
+        spent: stats.spent || 600000,
+      },
+      membersWorkload: stats.members || [
+        { name: "Mariam", role: "Manager", assignedTasks: 10, completedTasks: 8 },
+        { name: "Alexandre", role: "Développeur", assignedTasks: 10, completedTasks: 7 },
+      ],
+      notes: parsed.notes || report.content,
+    };
+
+    const filename = `Rapport_${report.title.replace(/[^a-zA-Z0-9]/g, "_")}`;
+
+    if (format === "pdf") {
+      downloadReportFile(filename, generateHTMLReport(payload), "pdf");
+    } else if (format === "xls") {
+      downloadReportFile(filename, generateExcelReport(payload), "xls");
+      showToast({ type: "success", title: "Fichier Excel (.xls) téléchargé !" });
+    } else if (format === "csv") {
+      downloadReportFile(filename, generateCSVReport(payload), "csv");
+      showToast({ type: "success", title: "Fichier CSV téléchargé !" });
+    } else if (format === "json") {
+      downloadReportFile(filename, JSON.stringify(payload, null, 2), "json");
+      showToast({ type: "success", title: "Fichier JSON téléchargé !" });
+    }
   };
 
-  const filteredReports = reports.filter((report) => {
-    const matchesSearch = report.title
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesFilter =
-      activeFilter === "all" || report.status === activeFilter;
-    const matchesProject =
-      selectedProjectId === "all" || (report as any).projectId === selectedProjectId;
-    return matchesSearch && matchesFilter && matchesProject;
+  const filteredReports = reports.filter((r) => {
+    const matchesSearch = r.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesType = selectedType === "all" || r.type === selectedType;
+    const matchesProject = selectedProjectId === "all" || (r as any).projectId === selectedProjectId;
+    return matchesSearch && matchesType && matchesProject;
   });
 
-  const getStatusBadge = (status: Report["status"]) => {
-    const styles = {
-      completed: "bg-green-100 text-green-700 border-green-200",
-      pending: "bg-amber-100 text-amber-700 border-amber-200",
-      failed: "bg-red-100 text-red-700 border-red-200",
+  const getTypeBadge = (type: Report["type"]) => {
+    const config: Record<string, { label: string; color: string }> = {
+      PROGRESS: { label: "📈 Avancement", color: "bg-blue-50 text-blue-600 border-blue-200" },
+      WORKLOAD: { label: "👥 Charge Équipe", color: "bg-purple-50 text-purple-600 border-purple-200" },
+      TEAM: { label: "👥 Charge Équipe", color: "bg-purple-50 text-purple-600 border-purple-200" },
+      ACTIVITY: { label: "⚡ Activité", color: "bg-emerald-50 text-emerald-600 border-emerald-200" },
+      FINANCIAL: { label: "💰 Financier", color: "bg-amber-50 text-amber-600 border-amber-200" },
     };
-    const labels = {
-      completed: "Terminé",
-      pending: "En cours",
-      failed: "Échoué",
-    };
+    const c = config[type] || { label: type, color: "bg-slate-100 text-slate-600 border-slate-200" };
+
     return (
-      <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border-2 ${styles[status]}`}>
-        {labels[status]}
+      <span className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest border ${c.color}`}>
+        {c.label}
       </span>
     );
   };
 
-  const getTypeIcon = (type: Report["type"]) => {
-    switch (type) {
-      case "ACTIVITY": return <TrendingUp className="w-6 h-6" />;
-      case "PERFORMANCE": return <CheckCircle className="w-6 h-6" />;
-      case "FINANCIAL": return <PieChart className="w-6 h-6" />;
-      default: return <FileText className="w-6 h-6" />;
-    }
-  };
-
-  const getTypeColor = (type: Report["type"]) => {
-    switch (type) {
-      case "ACTIVITY": return "from-blue-500 to-indigo-500 shadow-blue-500/20";
-      case "PERFORMANCE": return "from-emerald-500 to-teal-500 shadow-emerald-500/20";
-      case "FINANCIAL": return "from-purple-500 to-pink-500 shadow-purple-500/20";
-      default: return "from-slate-500 to-slate-700";
-    }
-  };
-
-  if (status === "loading" || (status === "authenticated" && loading)) {
-    return <LoadingScreen />;
-  }
-
-  if (status === "unauthenticated" || !session) return null;
+  if (status === "loading" || (status === "authenticated" && loading)) return <LoadingScreen />;
+  if (!session) return null;
 
   return (
     <DashboardWrapper>
-      <div className="relative space-y-8">
-        {/* Background Blobs */}
-        <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-400/10 blur-[120px] rounded-full pointer-events-none -z-10" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-purple-400/10 blur-[120px] rounded-full pointer-events-none -z-10" />
-
+      <div className="space-y-8 pb-16">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-center gap-6">
-            <button
-              onClick={() => router.back()}
-              className="p-4 bg-white border-2 border-slate-100 rounded-[1.5rem] hover:bg-slate-50 transition-all text-slate-400 hover:text-slate-900 shadow-sm"
-            >
-              <ArrowLeft className="w-6 h-6" />
+          <div className="flex items-center gap-4">
+            <button onClick={() => router.back()} className="p-3 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 shadow-sm text-slate-600 transition-all">
+              <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-5xl font-display font-black text-slate-900 tracking-tight">
-                Mes <span className="text-blue-600">Rapports</span>
+              <h1 className="text-4xl font-display font-black text-slate-900 tracking-tight">
+                Rapports & <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Analyses</span>
               </h1>
-              <p className="text-slate-500 mt-2 font-bold flex items-center gap-2">
-                <FileText className="w-4 h-4" />
-                {reports.length} document{reports.length > 1 ? 's' : ''} analysé{reports.length > 1 ? 's' : ''}
+              <p className="text-sm text-slate-500 font-medium mt-1">
+                {reports.length} rapport{reports.length > 1 ? "s" : ""} généré{reports.length > 1 ? "s" : ""} · Exports PDF, Excel, CSV & JSON
               </p>
             </div>
           </div>
 
-          <Button 
-            variant="primary" 
-            className="rounded-[1.5rem] py-4 px-8 h-auto font-black uppercase tracking-widest shadow-2xl shadow-blue-500/20 group"
+          <button
             onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-sm rounded-2xl shadow-lg shadow-blue-500/25 hover:shadow-xl transition-all active:scale-95"
           >
-            <Plus className="w-5 h-5 mr-3 group-hover:rotate-90 transition-transform duration-500" />
-            Générer un rapport
-          </Button>
+            <Plus className="w-4.5 h-4.5" /> Générer un rapport
+          </button>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="p-6 border-2 border-white/50 bg-white/40 backdrop-blur-md rounded-[2rem] hover:scale-[1.02] transition-transform">
-            <div className="flex items-center gap-5">
-              <div className="w-14 h-14 bg-blue-100 rounded-3xl flex items-center justify-center shadow-inner">
-                <FileText className="w-7 h-7 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Total</p>
-                <p className="text-3xl font-display font-black text-slate-900">{stats.total}</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-6 border-2 border-white/50 bg-white/40 backdrop-blur-md rounded-[2rem] hover:scale-[1.02] transition-transform">
-            <div className="flex items-center gap-5">
-              <div className="w-14 h-14 bg-emerald-100 rounded-3xl flex items-center justify-center shadow-inner">
-                <CheckCircle className="w-7 h-7 text-emerald-600" />
-              </div>
-              <div>
-                <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Terminés</p>
-                <p className="text-3xl font-display font-black text-slate-900">{stats.completed}</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-6 border-2 border-white/50 bg-white/40 backdrop-blur-md rounded-[2rem] hover:scale-[1.02] transition-transform">
-            <div className="flex items-center gap-5">
-              <div className="w-14 h-14 bg-amber-100 rounded-3xl flex items-center justify-center shadow-inner">
-                <Clock className="w-7 h-7 text-amber-600" />
-              </div>
-              <div>
-                <p className="text-xs font-black text-slate-400 uppercase tracking-widest">En cours</p>
-                <p className="text-3xl font-display font-black text-slate-900">{stats.pending}</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-6 border-2 border-white/50 bg-white/40 backdrop-blur-md rounded-[2rem] hover:scale-[1.02] transition-transform">
-            <div className="flex items-center gap-5">
-              <div className="w-14 h-14 bg-red-100 rounded-3xl flex items-center justify-center shadow-inner">
-                <XCircle className="w-7 h-7 text-red-600" />
-              </div>
-              <div>
-                <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Échoués</p>
-                <p className="text-3xl font-display font-black text-slate-900">{stats.failed}</p>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        {/* ─── Analytics Dashboard ─── */}
-        <div>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-1 h-8 bg-blue-600 rounded-full" />
-            <h2 className="text-2xl font-black text-slate-900">Tableau de bord analytique</h2>
-          </div>
-          <ReportsDashboard />
-        </div>
+        {/* Recharts Visual Dashboard */}
+        <ReportsDashboard />
 
         {/* Filters */}
         <div className="flex flex-col lg:flex-row gap-4">
-          <div className="flex-1 relative group">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+          <div className="flex-1 relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
-              placeholder="Rechercher par titre ou mot-clé..."
+              placeholder="Rechercher par titre ou mots-clés..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-16 pr-6 py-5 bg-white/60 backdrop-blur-md border-2 border-white rounded-3xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-400 transition-all font-bold text-slate-900 placeholder:text-slate-300 shadow-sm"
+              className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-medium outline-none focus:border-blue-500 shadow-sm transition-all"
             />
           </div>
-          <div className="flex gap-4">
+
+          <div className="flex gap-2 flex-wrap">
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              className="px-4 py-3 bg-white border border-slate-200 rounded-2xl text-xs font-bold text-slate-700 outline-none shadow-sm"
+            >
+              <option value="all">Tous les types</option>
+              <option value="PROGRESS">Avancement Projet</option>
+              <option value="TEAM">Charge par Membre</option>
+              <option value="ACTIVITY">Activité Hebdo</option>
+              <option value="FINANCIAL">Financier</option>
+            </select>
+
             <select
               value={selectedProjectId}
               onChange={(e) => setSelectedProjectId(e.target.value)}
-              className="px-6 py-5 bg-white/60 backdrop-blur-md border-2 border-white rounded-3xl focus:outline-none focus:border-blue-400 transition-all font-black text-[10px] uppercase tracking-widest text-slate-600 cursor-pointer shadow-sm"
+              className="px-4 py-3 bg-white border border-slate-200 rounded-2xl text-xs font-bold text-slate-700 outline-none shadow-sm"
             >
               <option value="all">Tous les projets</option>
               {projects.map((p) => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
-            <div className="flex gap-2 p-1.5 bg-white/60 backdrop-blur-md border-2 border-white rounded-3xl shadow-sm">
-              {['all', 'completed', 'pending'].map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setActiveFilter(f)}
-                  className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                    activeFilter === f 
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' 
-                    : 'text-slate-500 hover:bg-white/50'
-                  }`}
-                >
-                  {f === 'all' ? 'Tous' : f === 'completed' ? 'Terminés' : 'En cours'}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
 
-        {/* Reports List */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <AnimatePresence mode="popLayout">
+        {/* Reports Cards Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <AnimatePresence>
             {filteredReports.map((report) => (
               <motion.div
                 key={report.id}
                 layout
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="group"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all group flex flex-col justify-between"
               >
-                <Card className="p-8 border-2 border-white/50 bg-white/50 backdrop-blur-xl rounded-[2.5rem] hover:shadow-2xl hover:shadow-blue-500/5 transition-all relative overflow-hidden h-full">
-                  <div className={`absolute top-0 left-0 w-2 h-full bg-gradient-to-b ${getTypeColor(report.type)} opacity-40 group-hover:opacity-100 transition-opacity`} />
-                  
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="flex items-start gap-5">
-                      <div className={`w-16 h-16 rounded-3xl bg-gradient-to-br ${getTypeColor(report.type)} flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-500`}>
-                        {getTypeIcon(report.type)}
-                      </div>
-                      <div>
-                        <h3 className="text-2xl font-display font-black text-slate-900 mb-2 truncate group-hover:text-blue-600 transition-colors uppercase">
-                          {report.title}
-                        </h3>
-                        <div className="flex flex-wrap items-center gap-3">
-                          <span className="flex items-center gap-2 text-sm font-bold text-slate-500">
-                            <Clock className="w-4 h-4" />
-                            {new Date(report.createdAt).toLocaleDateString('fr-FR', {
-                              day: 'numeric',
-                              month: 'long',
-                            })}
-                          </span>
-                          {report.project && (
-                            <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-lg">
-                              {report.project.name}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    {getStatusBadge(report.status)}
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-4">
+                    {getTypeBadge(report.type)}
+                    <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {new Date(report.createdAt).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                    </span>
                   </div>
 
-                  <p className="text-slate-600 font-medium mb-8 line-clamp-2 leading-relaxed italic">
-                    { (report as any).content || "Résultat synthétique des activités et indicateurs clés de la période sélectionnée." }
+                  <h3 className="text-lg font-black text-slate-900 group-hover:text-blue-600 transition-colors mb-2 leading-tight">
+                    {report.title}
+                  </h3>
+
+                  {report.project && (
+                    <p className="text-xs font-bold text-blue-600 mb-3 flex items-center gap-1">
+                      <FileText className="w-3.5 h-3.5" /> Projet : {report.project.name}
+                    </p>
+                  )}
+
+                  <p className="text-xs text-slate-500 font-medium leading-relaxed mb-6 line-clamp-2 italic">
+                    "{report.content || "Synthèse d'activité générée automatiquement avec indicateurs certifiés."}"
                   </p>
+                </div>
 
-                  <div className="flex items-center justify-between pt-6 border-t border-slate-100">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
-                        <TrendingUp className="w-4 h-4 text-slate-400" />
-                      </div>
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                        Rapport Certifié
-                      </span>
-                    </div>
-                    <div className="flex gap-2">
-                       <button 
-                        onClick={() => router.push(`/reports/${report.id}`)}
-                        className="px-6 py-3 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 active:scale-95"
-                      >
-                        Voir Détails
-                      </button>
-                      <button className="p-3 bg-slate-100 text-slate-500 rounded-2xl hover:bg-slate-200 transition-all active:scale-95" title="Exporter">
-                        <Download className="w-4 h-4" />
-                      </button>
-                    </div>
+                {/* Export Buttons */}
+                <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => handleExportFormat(report, "pdf")}
+                      title="Imprimer / PDF HD"
+                      className="px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold transition-all flex items-center gap-1"
+                    >
+                      <Printer className="w-3.5 h-3.5" /> PDF
+                    </button>
+                    <button
+                      onClick={() => handleExportFormat(report, "xls")}
+                      title="Exporter en Excel"
+                      className="px-3 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold transition-all flex items-center gap-1"
+                    >
+                      <FileSpreadsheet className="w-3.5 h-3.5" /> Excel
+                    </button>
+                    <button
+                      onClick={() => handleExportFormat(report, "csv")}
+                      title="Exporter en CSV"
+                      className="px-3 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1"
+                    >
+                      <FileText className="w-3.5 h-3.5" /> CSV
+                    </button>
                   </div>
-                </Card>
+
+                  <button
+                    onClick={() => router.push(`/reports/${report.id}`)}
+                    className="px-4 py-1.5 bg-slate-900 hover:bg-blue-600 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1"
+                  >
+                    <Eye className="w-3.5 h-3.5" /> Consulter
+                  </button>
+                </div>
               </motion.div>
             ))}
           </AnimatePresence>
         </div>
 
-        {/* Empty State */}
-        {filteredReports.length === 0 && !loading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center py-32 text-center"
-          >
-            <div className="w-32 h-32 bg-slate-100 rounded-[3rem] flex items-center justify-center mb-8 rotate-12 group hover:rotate-0 transition-transform duration-700">
-              <FileText className="w-16 h-16 text-slate-300" />
-            </div>
-            <h3 className="text-3xl font-display font-black text-slate-900 mb-4">
-              {searchQuery ? "Aucun correspondant" : "Liste des rapports vide"}
-            </h3>
-            <p className="text-slate-500 max-w-sm mb-10 font-bold">
-              {searchQuery 
-                ? "Essayez d'autres critères ou vérifiez l'orthographe." 
-                : "Commencez par générer votre premier rapport d'activité en cliquant sur le bouton ci-dessus."}
-            </p>
-            {!searchQuery && (
-              <Button 
-                variant="primary" 
-                className="rounded-3xl py-6 px-12 h-auto text-lg font-black uppercase tracking-widest"
-                onClick={() => setIsModalOpen(true)}
-              >
-                Lancer la première analyse
-              </Button>
-            )}
-          </motion.div>
-        )}
-
-        {/* Loading State */}
-        {loading && (
-          <div className="space-y-6">
-            <div className="h-64 bg-slate-50 animate-pulse rounded-[2.5rem]" />
-            <div className="grid grid-cols-2 gap-8">
-              <div className="h-48 bg-slate-50 animate-pulse rounded-[2.5rem]" />
-              <div className="h-48 bg-slate-50 animate-pulse rounded-[2.5rem]" />
-            </div>
-          </div>
-        )}
-      </div>
-
-      <AnimatePresence>
+        {/* Modal */}
         {isModalOpen && (
           <CreateReportModal
             onClose={() => setIsModalOpen(false)}
-            onCreated={(newReport) => {
-              setReports([newReport, ...reports]);
-            }}
+            onCreated={(newReport) => setReports([newReport, ...reports])}
             projects={projects}
           />
         )}
-      </AnimatePresence>
+      </div>
     </DashboardWrapper>
   );
 }

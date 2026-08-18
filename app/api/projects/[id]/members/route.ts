@@ -99,6 +99,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         userId: project.owner.id,
         name: project.owner.name || project.owner.email,
         email: project.owner.email,
+        image: project.owner.image,
         avatar: project.owner.name
           ? project.owner.name.split(" ").map((n: string) => n[0]).join("").toUpperCase()
           : project.owner.email.substring(0, 2).toUpperCase(),

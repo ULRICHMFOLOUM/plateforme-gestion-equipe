@@ -71,7 +71,11 @@ export default function TaskDetailPage() {
         const response = await fetch(`/api/tasks/${params.id}`);
         if (response.ok) {
           const data = await response.json();
-          setTask(data);
+          setTask({
+            ...data,
+            comments: data.comments || [],
+            attachments: data.attachments || [],
+          });
         } else {
           setTask(null);
         }
@@ -220,21 +224,21 @@ export default function TaskDetailPage() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
               <MessageSquare className="w-5 h-5" />
-              <span>Commentaires ({task.comments.length})</span>
+              <span>Commentaires ({(task.comments || []).length})</span>
             </h2>
 
             <div className="space-y-4 mb-4">
-              {task.comments.map((comment) => (
+              {(task.comments || []).map((comment) => (
                 <div key={comment.id} className="flex space-x-3">
                   <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-white text-sm font-medium">
-                      {comment.user.name.charAt(0)}
+                      {(comment.user?.name || "U").charAt(0)}
                     </span>
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-1">
                       <span className="font-medium text-gray-900 dark:text-white">
-                        {comment.user.name}
+                        {comment.user?.name || "Utilisateur"}
                       </span>
                       <span className="text-sm text-gray-500 dark:text-gray-400">
                         {new Date(comment.createdAt).toLocaleDateString(
@@ -283,15 +287,15 @@ export default function TaskDetailPage() {
           </div>
 
           {/* Attachments */}
-          {task.attachments.length > 0 && (
+          {(task.attachments || []).length > 0 && (
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
                 <Paperclip className="w-5 h-5" />
-                <span>Pièces jointes ({task.attachments.length})</span>
+                <span>Pièces jointes ({(task.attachments || []).length})</span>
               </h2>
 
               <div className="space-y-3">
-                {task.attachments.map((attachment) => (
+                {(task.attachments || []).map((attachment) => (
                   <div
                     key={attachment.id}
                     className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"

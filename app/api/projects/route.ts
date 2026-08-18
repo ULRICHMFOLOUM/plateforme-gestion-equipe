@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { canCreateProject } from "@/lib/subscription";
 
 /**
  * GET : Récupère la liste des projets de l'utilisateur connecté
@@ -67,6 +68,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Le nom du projet est requis" },
         { status: 400 }
+      );
+    }
+
+    // Vérifier les limites du plan d'abonnement
+    const userDb = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        plan: true,
+        subscriptionStatus: true,
+        trialEndsAt: true,
+        subscriptionEndsAt: true,
+        isInternalAccount: true,
+        _count: { select: { ownedProjects: true } },
+      },
+    });
+
+    if (!userDb) {
+      return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
+    }
+
+    if (!canCreateProject(userDb, userDb._count.ownedProjects)) {
+      return NextResponse.json(
+        {
+          error: "Limite de projets atteinte pour votre plan d'abonnement. Passez au plan Pro pour débloquer les projets illimités.",
+          code: "LIMIT_REACHED",
+        },
+        { status: 402 }
       );
     }
 

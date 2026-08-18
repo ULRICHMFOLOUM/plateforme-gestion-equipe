@@ -74,10 +74,7 @@ export default async function DashboardPage() {
             projects: projects.length,
             avgProgress: 0,
             taskCompletionRate: 0,
-            budget: { total: 0, spent: 0, utilization: 0 }
           },
-          upcomingEvents: [],
-          urgentTasks: []
         }}
       />
     </DashboardWrapper>

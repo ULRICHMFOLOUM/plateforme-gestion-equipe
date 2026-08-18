@@ -54,23 +54,28 @@ export async function GET() {
     });
 
     // Formatage des données pour le frontend
-    const formattedRooms = userRooms.map((room) => ({
-      id: room.id,
-      name: room.name,
-      type: room.type,
-      lastMessage: room.messages[0] ? {
-          id: room.messages[0].id,
-          content: room.messages[0].content,
-          senderId: room.messages[0].senderId,
-          timestamp: room.messages[0].sentAt,
-      } : undefined,
-      participants: room.members.map((member) => ({
-        id: member.user.id,
-        name: member.user.name,
-        email: member.user.email,
-        image: member.user.image,
-      })),
-    }));
+    const formattedRooms = userRooms.map((room) => {
+      const lastMsg = room.messages[0];
+      const hasUnread = lastMsg ? (lastMsg.senderId !== session.user.id) : false;
+      return {
+        id: room.id,
+        name: room.name,
+        type: room.type,
+        hasUnread,
+        lastMessage: lastMsg ? {
+          id: lastMsg.id,
+          content: lastMsg.content,
+          senderId: lastMsg.senderId,
+          timestamp: lastMsg.sentAt,
+        } : undefined,
+        participants: room.members.map((member) => ({
+          id: member.user.id,
+          name: member.user.name,
+          email: member.user.email,
+          image: member.user.image,
+        })),
+      };
+    });
 
     return NextResponse.json(formattedRooms);
   } catch (error) {
