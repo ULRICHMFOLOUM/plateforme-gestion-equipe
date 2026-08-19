@@ -22,19 +22,16 @@ export function Navbar() {
             <motion.div
               whileHover={{ scale: 1.08 }}
               transition={{ duration: 0.3 }}
-              className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg group-hover:shadow-blue-500/40 transition-shadow"
+              className="relative w-11 h-11 rounded-2xl overflow-hidden shadow-lg group-hover:shadow-blue-500/40 transition-shadow"
             >
               <Image
                 src="/teamflow-logo.png"
-                alt="TeamFlow Logo"
+                alt="Logo"
                 fill
                 className="object-contain"
                 priority
               />
             </motion.div>
-            <span className="text-2xl font-display font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              TeamFlow
-            </span>
           </Link>
 
           {/* Desktop Navigation */}

@@ -32,7 +32,7 @@ export default function TermsPage() {
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 pb-24 space-y-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24 space-y-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-3xl border border-slate-100 shadow-xl p-8 space-y-6">
           <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
             <Scale className="w-6 h-6 text-blue-600" /> 1. Objet et acceptation

@@ -190,11 +190,6 @@ export default function Header() {
 
   return (
     <>
-      <TrialBanner
-        plan={(session.user as any).plan || "TRIAL"}
-        trialEndsAt={(session.user as any).trialEndsAt}
-        isInternalAccount={(session.user as any).isInternalAccount}
-      />
       <motion.header
         style={{ backgroundColor: headerBg, borderColor: headerBorder }}
         className="fixed top-0 right-0 left-0 md:left-72 z-50 backdrop-blur-md border-b transition-colors duration-300 h-20"

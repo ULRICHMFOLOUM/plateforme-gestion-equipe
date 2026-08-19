@@ -10,12 +10,14 @@ import LoadingScreen from "@/components/ui/LoadingScreen";
 import { SearchProvider } from "@/context/SearchContext";
 import { SidebarProvider } from "@/context/SidebarContext";
 
+import TrialBanner from "@/components/ui/TrialBanner";
+
 interface DashboardWrapperProps {
   children: React.ReactNode;
 }
 
 export default function DashboardWrapper({ children }: DashboardWrapperProps) {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
@@ -34,9 +36,16 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
         <div className="min-h-screen bg-slate-50/50">
           <Sidebar />
           <Header />
-          <main className="md:ml-72 min-h-screen transition-all duration-300 ease-in-out">
+          <main className="md:ml-72 min-h-screen pt-20 transition-all duration-300 ease-in-out">
             <PageTransition>
               <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
+                {session?.user && (
+                  <TrialBanner
+                    plan={(session.user as any).plan || "TRIAL"}
+                    trialEndsAt={(session.user as any).trialEndsAt}
+                    isInternalAccount={(session.user as any).isInternalAccount}
+                  />
+                )}
                 {children}
               </div>
             </PageTransition>

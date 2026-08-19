@@ -105,24 +105,16 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
           <motion.div
             whileHover={{ scale: 1.08, rotate: 3 }}
             transition={{ type: "spring", stiffness: 400, damping: 15 }}
-            className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-blue-500/25 ring-2 ring-blue-100 group-hover:ring-blue-300 transition-all duration-300"
+            className="relative w-11 h-11 rounded-2xl overflow-hidden shadow-lg shadow-blue-500/25 ring-2 ring-blue-100 group-hover:ring-blue-300 transition-all duration-300"
           >
             <Image
               src="/teamflow-logo.png"
-              alt="TeamFlow Logo"
+              alt="Site Logo"
               fill
               className="object-contain"
               priority
             />
           </motion.div>
-          <div className="flex flex-col">
-            <span className="text-xl font-display font-black text-slate-900 tracking-tight leading-none">
-              Team<span className="text-blue-600">Flow</span>
-            </span>
-            <span className="text-[10px] font-bold text-slate-400 tracking-[0.2em] mt-0.5 group-hover:text-blue-500 transition-colors">
-              ENTERPRISE
-            </span>
-          </div>
         </Link>
       </div>
 

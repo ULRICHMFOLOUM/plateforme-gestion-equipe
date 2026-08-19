@@ -30,7 +30,7 @@ export default function CookiesPage() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 pb-24 space-y-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24 space-y-8">
         <div className="bg-white rounded-3xl border border-slate-100 shadow-xl p-8 space-y-6">
           <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
             <Info className="w-6 h-6 text-blue-600" /> Qu'est-ce qu'un cookie ?
