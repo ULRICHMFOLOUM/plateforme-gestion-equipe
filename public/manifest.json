@@ -1,6 +1,6 @@
 {
-  "name": "TeamFlows — Plateforme de Gestion d'Équipe",
-  "short_name": "TeamFlows",
+  "name": "TeamFlows",
+  "short_name": "",
   "description": "Plateforme complète de collaboration d'équipe, visioconférence HD, Kanban, chat et gestion de fichiers.",
   "start_url": "/",
   "display": "standalone",

@@ -115,6 +115,14 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
               priority
             />
           </motion.div>
+          <div className="flex flex-col">
+            <span className="text-xl font-display font-black text-slate-900 tracking-tight leading-none">
+              Team<span className="text-blue-600">flows</span>
+            </span>
+            <span className="text-[10px] font-bold text-slate-400 tracking-[0.2em] mt-0.5 group-hover:text-blue-500 transition-colors">
+              ENTERPRISE
+            </span>
+          </div>
         </Link>
       </div>
 
