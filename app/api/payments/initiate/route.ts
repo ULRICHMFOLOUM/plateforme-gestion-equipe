@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
         userId: session.user.id,
         externalId: payment.id,
         redirectUrl: `${BASE_URL}/settings/billing?payment=success&tx_ref=${payment.id}`,
-        message: `TeamFlow Abonnement Plan ${plan} (${billingPeriod === "MONTHLY" ? "Mensuel" : "Annuel"})`,
+        message: `Teamflows Abonnement Plan ${plan} (${billingPeriod === "MONTHLY" ? "Mensuel" : "Annuel"})`,
       }),
     });
 

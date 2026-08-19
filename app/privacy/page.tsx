@@ -8,7 +8,7 @@ const sections = [
   {
     icon: Eye,
     title: "1. Données collectées",
-    content: `Lors de votre inscription et utilisation de TeamFlow, nous collectons les informations suivantes :
+    content: `Lors de votre inscription et utilisation de Teamflows, nous collectons les informations suivantes :
 
 **Données d'identité :** Nom, prénom, adresse e-mail, photo de profil (optionnelle).
 
@@ -38,7 +38,7 @@ Nous ne vendons, ne louons ni ne partageons vos données personnelles avec des t
   {
     icon: Globe,
     title: "3. Partage et sous-traitants",
-    content: `TeamFlow fait appel à des sous-traitants techniques de confiance pour assurer la fourniture du service :
+    content: `Teamflows fait appel à des sous-traitants techniques de confiance pour assurer la fourniture du service :
 
 • **NeonDB (Neon Technologies)** : Hébergement de la base de données PostgreSQL sur des serveurs sécurisés situés aux États-Unis. Données chiffrées au repos et en transit.
 
@@ -80,7 +80,7 @@ Tous nos sous-traitants sont soumis à des accords de traitement des données co
 
 • **Droit d'opposition :** Vous opposer à certains traitements (ex: communications marketing).
 
-**Pour exercer vos droits**, contactez-nous à : privacy@teamflow.novastack.cm`,
+**Pour exercer vos droits**, contactez-nous à : privacy@teamflows.novastack.cm`,
   },
   {
     icon: Trash2,
@@ -98,7 +98,7 @@ Tous nos sous-traitants sont soumis à des accords de traitement des données co
   {
     icon: Mail,
     title: "7. Cookies",
-    content: `TeamFlow utilise des cookies et technologies similaires pour :
+    content: `Teamflows utilise des cookies et technologies similaires pour :
 
 • **Cookies essentiels :** Maintenir votre session de connexion (cookie de session NextAuth). Strictement nécessaires au fonctionnement du service — non soumis au consentement.
 
@@ -132,7 +132,7 @@ export default function PrivacyPage() {
               </div>
             </div>
             <p className="text-blue-100 text-lg leading-relaxed max-w-2xl">
-              TeamFlow by Novastack Digital s'engage à protéger et respecter votre vie privée.
+              Teamflows by Novastack Digital s'engage à protéger et respecter votre vie privée.
               Ce document explique quelles données nous collectons, pourquoi et comment nous les utilisons.
             </p>
             <p className="text-blue-300 text-sm mt-4 font-medium">
@@ -208,9 +208,9 @@ export default function PrivacyPage() {
           <h3 className="text-2xl font-black mb-3">Une question sur vos données ?</h3>
           <p className="text-blue-100 mb-6">Notre équipe est disponible pour répondre à toutes vos questions concernant la protection de vos données personnelles.</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a href="mailto:privacy@teamflow.novastack.cm"
+            <a href="mailto:privacy@teamflows.novastack.cm"
               className="px-6 py-3 bg-white text-blue-600 rounded-xl font-black hover:bg-blue-50 transition-colors flex items-center gap-2 shadow-lg">
-              <Mail className="w-4 h-4" /> privacy@teamflow.novastack.cm
+              <Mail className="w-4 h-4" /> privacy@teamflows.novastack.cm
             </a>
           </div>
           <p className="text-blue-200 text-sm mt-4">Délai de réponse : 48h ouvrées maximum</p>

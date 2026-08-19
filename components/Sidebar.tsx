@@ -100,28 +100,31 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-white/80 backdrop-blur-xl border-r border-slate-200/50 shadow-xl shadow-slate-200/20">
       {/* Logo Section */}
-      <div className="flex flex-col pt-8 pb-6 px-6">
-        <Link href="/dashboard" className="flex items-center gap-3 group" onClick={onLinkClick}>
+      <div className="flex flex-col pt-7 pb-5 px-6 border-b border-slate-100/80">
+        <Link href="/dashboard" className="flex items-center gap-3.5 group" onClick={onLinkClick}>
           <motion.div
-            whileHover={{ scale: 1.08, rotate: 3 }}
+            whileHover={{ scale: 1.06, rotate: 2 }}
             transition={{ type: "spring", stiffness: 400, damping: 15 }}
-            className="relative w-11 h-11 rounded-2xl overflow-hidden shadow-lg shadow-blue-500/25 ring-2 ring-blue-100 group-hover:ring-blue-300 transition-all duration-300"
+            className="relative w-11 h-11 rounded-2xl overflow-hidden shadow-md shadow-blue-500/20 ring-2 ring-blue-100 group-hover:ring-blue-400 group-hover:shadow-blue-500/30 transition-all duration-300 flex-shrink-0 bg-slate-950 p-0.5"
           >
             <Image
               src="/teamflow-logo.png"
-              alt="Site Logo"
+              alt="Teamflows"
               fill
-              className="object-contain"
+              className="object-contain p-0.5 rounded-xl"
               priority
             />
           </motion.div>
-          <div className="flex flex-col">
-            <span className="text-xl font-display font-black text-slate-900 tracking-tight leading-none">
+          <div className="flex flex-col justify-center">
+            <span className="text-xl font-display font-black text-slate-900 tracking-tight leading-none group-hover:text-blue-600 transition-colors">
               Team<span className="text-blue-600">flows</span>
             </span>
-            <span className="text-[10px] font-bold text-slate-400 tracking-[0.2em] mt-0.5 group-hover:text-blue-500 transition-colors">
-              ENTERPRISE
-            </span>
+            <div className="flex items-center mt-1.5">
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[9px] font-extrabold tracking-widest text-blue-700 bg-blue-50 border border-blue-200/80 rounded-md uppercase shadow-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
+                ENTERPRISE
+              </span>
+            </div>
           </div>
         </Link>
       </div>

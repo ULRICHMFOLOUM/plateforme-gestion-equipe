@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
-  const adminEmail = 'admin@teamflow.com';
+  const adminEmail = 'admin@teamflows.com';
   const newPassword = 'password123';
   const hashedPassword = await bcrypt.hash(newPassword, 12);
   

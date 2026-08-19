@@ -146,9 +146,9 @@ export default function SignUpPage() {
       >
         <Link href="/" className="flex items-center gap-3 group">
           <div className="relative w-12 h-12 rounded-2xl overflow-hidden shadow-xl shadow-blue-500/20">
-            <Image src="/teamflow-logo.png" alt="TeamFlow" fill className="object-contain" priority />
+            <Image src="/teamflow-logo.png" alt="Teamflows" fill className="object-contain" priority />
           </div>
-          <span className="text-3xl font-black text-white tracking-tight">TeamFlow</span>
+          <span className="text-3xl font-black text-white tracking-tight">Teamflows</span>
         </Link>
 
         <div className="space-y-8">
@@ -193,7 +193,7 @@ export default function SignUpPage() {
           </div>
         </div>
 
-        <div className="text-slate-600 text-sm">© 2024 TeamFlow — Tous droits réservés</div>
+        <div className="text-slate-600 text-sm">© {new Date().getFullYear()} Teamflows — Tous droits réservés</div>
       </motion.div>
 
       {/* ── RIGHT PANEL – Form ── */}
@@ -208,9 +208,9 @@ export default function SignUpPage() {
           <div className="flex justify-center mb-6 lg:hidden">
             <Link href="/" className="flex items-center gap-3">
               <div className="relative w-10 h-10 rounded-xl overflow-hidden">
-                <Image src="/teamflow-logo.png" alt="TeamFlow" fill className="object-contain" />
+                <Image src="/teamflow-logo.png" alt="Teamflows" fill className="object-contain" />
               </div>
-              <span className="text-2xl font-black text-white">TeamFlow</span>
+              <span className="text-2xl font-black text-white">Teamflows</span>
             </Link>
           </div>
 

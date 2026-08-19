@@ -219,9 +219,9 @@ function SignInForm() {
       >
         <Link href="/" className="flex items-center gap-3 group">
           <div className="relative w-12 h-12 rounded-2xl overflow-hidden shadow-xl shadow-blue-500/20">
-            <Image src="/teamflow-logo.png" alt="TeamFlow" fill className="object-contain" priority />
+            <Image src="/teamflow-logo.png" alt="Teamflows" fill className="object-contain" priority />
           </div>
-          <span className="text-3xl font-black text-white tracking-tight">TeamFlow</span>
+          <span className="text-3xl font-black text-white tracking-tight">Teamflows</span>
         </Link>
 
         <div className="space-y-10">
@@ -261,7 +261,7 @@ function SignInForm() {
 
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
             <p className="text-slate-300 italic text-sm leading-relaxed mb-4">
-              &ldquo;TeamFlow a révolutionné notre façon de travailler. Tout est au même endroit.&rdquo;
+              &ldquo;Teamflows a révolutionné notre façon de travailler. Tout est au même endroit.&rdquo;
             </p>
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-black">
@@ -275,7 +275,7 @@ function SignInForm() {
           </div>
         </div>
 
-        <div className="text-slate-600 text-sm">© 2024 TeamFlow — Tous droits réservés</div>
+        <div className="text-slate-600 text-sm">© {new Date().getFullYear()} Teamflows — Tous droits réservés</div>
       </motion.div>
 
       {/* ── RIGHT PANEL – Form ── */}
@@ -290,9 +290,9 @@ function SignInForm() {
           <div className="flex justify-center mb-8 lg:hidden">
             <Link href="/" className="flex items-center gap-3">
               <div className="relative w-10 h-10 rounded-xl overflow-hidden">
-                <Image src="/teamflow-logo.png" alt="TeamFlow" fill className="object-contain" />
+                <Image src="/teamflow-logo.png" alt="Teamflows" fill className="object-contain" />
               </div>
-              <span className="text-2xl font-black text-white">TeamFlow</span>
+              <span className="text-2xl font-black text-white">Teamflows</span>
             </Link>
           </div>
 

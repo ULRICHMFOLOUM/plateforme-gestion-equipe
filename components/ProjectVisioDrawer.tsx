@@ -22,7 +22,7 @@ export default function ProjectVisioDrawer({
   const [micOn, setMicOn] = useState(true);
   const [videoOn, setVideoOn] = useState(true);
 
-  const roomUrl = `https://meet.jit.si/TeamFlow-Project-${projectId}`;
+  const roomUrl = `https://meet.jit.si/Teamflows-Project-${projectId}`;
 
   return (
     <ContextDrawer

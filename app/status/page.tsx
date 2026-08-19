@@ -51,7 +51,7 @@ export default function StatusPage() {
         {/* Header Navigation */}
         <div className="flex items-center justify-between mb-12">
           <Link href="/" className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-semibold">
-            <ArrowLeft className="w-4 h-4" /> Retour à TeamFlow
+            <ArrowLeft className="w-4 h-4" /> Retour à Teamflows
           </Link>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
@@ -69,7 +69,7 @@ export default function StatusPage() {
             <Activity className="w-4 h-4" /> Observabilité & Statut Serveur
           </motion.div>
           <h1 className="text-4xl font-black tracking-tight text-white mb-3">
-            Statut des services <span className="text-blue-500">TeamFlow</span>
+            Statut des services <span className="text-blue-500">Teamflows</span>
           </h1>
           <p className="text-slate-400 text-sm max-w-xl mx-auto">
             Suivi en temps réel de la disponibilité, des temps de réponse et de la sécurité de nos systèmes.

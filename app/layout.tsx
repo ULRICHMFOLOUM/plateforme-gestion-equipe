@@ -14,6 +14,11 @@ export const metadata: Metadata = {
     "Plateforme complète de gestion d'équipe avec visioconférence HD, Kanban, chat et gestion de fichiers",
   manifest: "/manifest.json",
   themeColor: "#4F46E5",
+  icons: {
+    icon: "/teamflow-logo.png",
+    apple: "/teamflow-logo.png",
+    shortcut: "/teamflow-logo.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -30,6 +35,7 @@ export default function RootLayout({
     <html lang="fr">
       <head>
         <link rel="manifest" href="/manifest.json" />
+        <link rel="icon" type="image/png" href="/teamflow-logo.png" />
         <link rel="apple-touch-icon" href="/teamflow-logo.png" />
         <meta name="theme-color" content="#4F46E5" />
         <meta name="mobile-web-app-capable" content="yes" />

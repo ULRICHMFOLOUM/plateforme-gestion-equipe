@@ -69,7 +69,7 @@ export default function PWAInstallPrompt() {
           <div className="flex items-center gap-3">
             {/* App Icon */}
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 p-2 shadow-lg shrink-0 flex items-center justify-center border border-white/20">
-              <img src="/teamflow-logo.png" alt="TeamFlow" className="w-full h-full object-contain drop-shadow" onError={(e) => {
+              <img src="/teamflow-logo.png" alt="Teamflows" className="w-full h-full object-contain drop-shadow" onError={(e) => {
                 // Fallback icon if logo missing
                 e.currentTarget.style.display = 'none';
               }} />
@@ -77,7 +77,7 @@ export default function PWAInstallPrompt() {
             </div>
             <div>
               <h4 className="font-black text-sm text-white flex items-center gap-1.5">
-                TeamFlow PWA <Sparkles className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                Teamflows PWA <Sparkles className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
               </h4>
               <p className="text-xs text-slate-400 mt-0.5">Application progressive prête</p>
             </div>

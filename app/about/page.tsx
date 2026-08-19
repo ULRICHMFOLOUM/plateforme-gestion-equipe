@@ -20,7 +20,7 @@ export default function AboutPage() {
               </div>
               <div>
                 <span className="text-blue-200 text-sm font-bold tracking-wider uppercase">Notre Histoire</span>
-                <h1 className="text-3xl sm:text-4xl font-black text-white">À propos de TeamFlow</h1>
+                <h1 className="text-3xl sm:text-4xl font-black text-white">À propos de Teamflows</h1>
               </div>
             </div>
             <p className="text-blue-100 text-lg leading-relaxed max-w-2xl">
@@ -36,7 +36,7 @@ export default function AboutPage() {
             <Target className="w-6 h-6 text-blue-600" /> Notre Mission
           </h2>
           <p className="text-slate-600 leading-relaxed text-sm sm:text-base">
-            TeamFlow a été créé avec une vision claire : éliminer la fragmentation des outils de travail. Au lieu d'utiliser 5 applications différentes pour le chat, le Kanban, le calendrier, la visioconférence et la facturation, TeamFlow rassemble tout dans un seul espace fluide et hyper-réactif.
+            Teamflows a été créé avec une vision claire : éliminer la fragmentation des outils de travail. Au lieu d'utiliser 5 applications différentes pour le chat, le Kanban, le calendrier, la visioconférence et la facturation, Teamflows rassemble tout dans un seul espace fluide et hyper-réactif.
           </p>
 
           <div className="grid sm:grid-cols-3 gap-4 pt-6 border-t border-slate-100">

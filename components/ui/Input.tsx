@@ -21,7 +21,7 @@ interface InputProps
 }
 
 /**
- * Input Component - TeamFlow style
+ * Input Component - Teamflows style
  *
  * Input réutilisable avec support d'icône, label, et états d'erreur.
  * Utilise Framer Motion pour les animations de focus.

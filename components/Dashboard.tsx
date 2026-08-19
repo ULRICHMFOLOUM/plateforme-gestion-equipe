@@ -824,7 +824,7 @@ export default function Dashboard({ tasks, projects, events, stats: initialStats
                     <div className="absolute left-4 top-0 bottom-0 w-px bg-gradient-to-b from-slate-200 to-transparent" />
                     <div className="space-y-4 pl-10">
                       {[
-                        { emoji: "✅", color: "bg-emerald-50", name: "Système",  action: "TeamFlow est prêt à l'emploi",   time: "Maintenant" },
+                        { emoji: "✅", color: "bg-emerald-50", name: "Système",  action: "Teamflows est prêt à l'emploi",   time: "Maintenant" },
                         { emoji: "📁", color: "bg-blue-50",    name: "Guide",    action: "Créez votre premier projet",     time: "Il y a 1 min" },
                         { emoji: "📝", color: "bg-violet-50",  name: "Astuce",   action: "Assignez des tâches à l'équipe", time: "Il y a 2 min" },
                         { emoji: "💬", color: "bg-amber-50",   name: "Tips",     action: "Utilisez le chat pour collaborer", time: "Il y a 3 min" },

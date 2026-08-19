@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     }
 
     const secret = totp.generateSecret();
-    const serviceName = "TeamFlow";
+    const serviceName = "Teamflows";
     const otpauth = totp.keyuri(user.email, serviceName, secret);
 
     const qrCodeUrl = await QRCode.toDataURL(otpauth);

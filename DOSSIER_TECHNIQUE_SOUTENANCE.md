@@ -1,11 +1,11 @@
-# 📘 Dossier Technique de Soutenance : TeamFlow
+# 📘 Dossier Technique de Soutenance : Teamflows
 
 Ce document est conçu pour vous accompagner lors de votre présentation devant le jury. Il détaille l'architecture, les choix technologiques et le fonctionnement interne de chaque module de votre plateforme de gestion d'équipe.
 
 ---
 
 ## 1. Présentation du Projet
-**TeamFlow** est une plateforme intégrée de collaboration et de gestion de projet. Elle vise à centraliser les outils de communication (Chat, Vidéo), de gestion opérationnelle (Projets, Tâches, Fichiers) et de gestion humaine (Annuaire, Profils) au sein d'une interface unique, moderne et haute performance.
+**Teamflows** est une plateforme intégrée de collaboration et de gestion de projet. Elle vise à centraliser les outils de communication (Chat, Vidéo), de gestion opérationnelle (Projets, Tâches, Fichiers) et de gestion humaine (Annuaire, Profils) au sein d'une interface unique, moderne et haute performance.
 
 ---
 
@@ -87,7 +87,7 @@ Lors du développement, nous avons été confrontés à des restrictions réseau
 ---
 
 ## 6. Conclusion pour la soutenance
-*"TeamFlow n'est pas qu'un simple outil de gestion, c'est une infrastructure technique pensée pour l'évolutivité. Grâce à l'utilisation de Next.js et d'un adaptateur de base de données moderne, nous offrons une stabilité et une réactivité maximale tout en maintenant un code propre et maintenable via Prisma."*
+*"Teamflows n'est pas qu'un simple outil de gestion, c'est une infrastructure technique pensée pour l'évolutivité. Grâce à l'utilisation de Next.js et d'un adaptateur de base de données moderne, nous offrons une stabilité et une réactivité maximale tout en maintenant un code propre et maintenable via Prisma."*
 
 ---
 > [!TIP]

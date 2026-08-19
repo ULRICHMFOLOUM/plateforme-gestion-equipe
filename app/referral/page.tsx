@@ -49,14 +49,14 @@ export default function ReferralPage() {
 
   const handleShareWhatsApp = () => {
     if (!data?.shareLink) return;
-    const msg = `Rejoins-moi sur TeamFlow, la meilleure plateforme de gestion d'équipe ! Utilise mon lien pour bénéficier de 15% de réduction sur ton abonnement : ${data.shareLink}`;
+    const msg = `Rejoins-moi sur Teamflows, la meilleure plateforme de gestion d'équipe ! Utilise mon lien pour bénéficier de 15% de réduction sur ton abonnement : ${data.shareLink}`;
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
   const handleShareEmail = () => {
     if (!data?.shareLink) return;
-    const subject = "Invitation à rejoindre TeamFlow (15% de réduction offerte)";
-    const body = `Bonjour,\n\nJe t'invite à découvrir TeamFlow Enterprise pour gérer tes projets et ton équipe avec fluidité.\n\nEn t'inscrivant avec mon lien de parrainage, tu reçois 15% de réduction immédiate sur ton abonnement :\n${data.shareLink}\n\nÀ très vite !`;
+    const subject = "Invitation à rejoindre Teamflows (15% de réduction offerte)";
+    const body = `Bonjour,\n\nJe t'invite à découvrir Teamflows Enterprise pour gérer tes projets et ton équipe avec fluidité.\n\nEn t'inscrivant avec mon lien de parrainage, tu reçois 15% de réduction immédiate sur ton abonnement :\n${data.shareLink}\n\nÀ très vite !`;
     window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, "_blank");
   };
 
@@ -117,7 +117,7 @@ export default function ReferralPage() {
                 Votre lien de parrainage exclusif
               </h2>
               <p className="text-slate-500 text-sm leading-relaxed">
-                Partagez votre lien. Chaque ami qui s'abonne à TeamFlow reçoit <strong className="text-blue-600">15% de réduction</strong> et vous crédite <strong className="text-indigo-600">2,000 XAF de récompense</strong> directe.
+                Partagez votre lien. Chaque ami qui s'abonne à Teamflows reçoit <strong className="text-blue-600">15% de réduction</strong> et vous crédite <strong className="text-indigo-600">2,000 XAF de récompense</strong> directe.
               </p>
 
               {/* Copy input bar */}

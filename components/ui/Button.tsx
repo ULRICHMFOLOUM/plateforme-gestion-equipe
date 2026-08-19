@@ -24,7 +24,7 @@ interface ButtonProps {
 }
 
 /**
- * Button Component - TeamFlow style
+ * Button Component - Teamflows style
  *
  * Bouton réutilisable avec variantes, tailles, icônes et état de chargement.
  * Utilise Framer Motion pour les animations.

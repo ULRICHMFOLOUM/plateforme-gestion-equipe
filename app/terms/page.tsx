@@ -25,7 +25,7 @@ export default function TermsPage() {
               </div>
             </div>
             <p className="text-slate-300 text-lg leading-relaxed max-w-2xl">
-              Bienvenue sur TeamFlow. En accédant ou en utilisant nos services, vous acceptez d'être lié par les présentes conditions.
+              Bienvenue sur Teamflows. En accédant ou en utilisant nos services, vous acceptez d'être lié par les présentes conditions.
             </p>
           </motion.div>
         </div>
@@ -38,7 +38,7 @@ export default function TermsPage() {
             <Scale className="w-6 h-6 text-blue-600" /> 1. Objet et acceptation
           </h2>
           <p className="text-slate-600 leading-relaxed text-sm sm:text-base">
-            Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation de la plateforme TeamFlow développée par Novastack Digital.
+            Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation de la plateforme Teamflows développée par Novastack Digital.
             Tout accès à la plateforme implique l'acceptation sans réserve des présentes conditions par l'utilisateur.
           </p>
         </motion.div>
@@ -68,7 +68,7 @@ export default function TermsPage() {
             <AlertCircle className="w-6 h-6 text-blue-600" /> 4. Responsabilités
           </h2>
           <p className="text-slate-600 leading-relaxed text-sm sm:text-base">
-            L'utilisateur s'interdit de publier du contenu illégal ou malveillant. TeamFlow s'efforce de garantir une disponibilité du service à 99,9% mais ne saurait être tenu responsable des pannes indépendantes de sa volonté.
+            L'utilisateur s'interdit de publier du contenu illégal ou malveillant. Teamflows s'efforce de garantir une disponibilité du service à 99,9% mais ne saurait être tenu responsable des pannes indépendantes de sa volonté.
           </p>
         </motion.div>
 

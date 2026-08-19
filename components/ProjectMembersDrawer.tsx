@@ -107,7 +107,7 @@ export default function ProjectMembersDrawer({
                   <UserAvatar user={{ id: m.id, name: m.name, image: m.image }} size="md" />
                   <div>
                     <p className="font-bold text-slate-900 text-sm">{m.name}</p>
-                    <p className="text-xs text-slate-400 font-medium">{m.email || `${m.name.toLowerCase().replace(" ", "")}@teamflow.com`}</p>
+                    <p className="text-xs text-slate-400 font-medium">{m.email || `${m.name.toLowerCase().replace(" ", "")}@teamflows.com`}</p>
                   </div>
                 </div>
 

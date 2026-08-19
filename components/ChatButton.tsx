@@ -88,7 +88,7 @@ export default function ChatButton() {
               <div className="flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
                 <GripHorizontal className="w-4 h-4 text-white/50" />
-                <span className="text-white font-black text-sm">Messagerie TeamFlow</span>
+                <span className="text-white font-black text-sm">Messagerie Teamflows</span>
               </div>
               <div className="flex items-center gap-1">
                 <button

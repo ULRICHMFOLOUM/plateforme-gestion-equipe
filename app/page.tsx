@@ -544,7 +544,7 @@ export default function HomePage() {
               Trois étapes vers
               <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent"> l'excellence</span>
             </h2>
-            <p className="text-lg text-slate-300 max-w-2xl mx-auto">TeamFlow simplifie la complexité pour que vous puissiez vous concentrer sur ce qui compte vraiment.</p>
+            <p className="text-lg text-slate-300 max-w-2xl mx-auto">Teamflows simplifie la complexité pour que vous puissiez vous concentrer sur ce qui compte vraiment.</p>
           </motion.div>
 
           <div className="relative grid sm:grid-cols-3 gap-8">
@@ -607,7 +607,7 @@ export default function HomePage() {
 
           <div className="grid sm:grid-cols-3 gap-6">
             {[
-              { name: "Sarah Jensen", role: "Product Manager chez TechCorp", quote: "TeamFlow a littéralement changé notre façon de travailler. C'est l'outil le plus intuitif que j'ai utilisé en 10 ans de carrière.", avatar: "SJ", color: "from-blue-400 to-indigo-500" },
+              { name: "Sarah Jensen", role: "Product Manager chez TechCorp", quote: "Teamflows a littéralement changé notre façon de travailler. C'est l'outil le plus intuitif que j'ai utilisé en 10 ans de carrière.", avatar: "SJ", color: "from-blue-400 to-indigo-500" },
               { name: "Marc Dubois", role: "Lead Developer chez StartupXY", quote: "La visioconférence intégrée au chat change tout. Plus besoin de jongler entre trois applis différentes pour une simple réunion.", avatar: "MD", color: "from-emerald-400 to-teal-500" },
               { name: "Léa Martin", role: "Creative Director chez AgenceM", quote: "Le design est magnifique et l'expérience utilisateur est parfaite. Le travail quotidien est devenu un vrai plaisir pour toute mon équipe.", avatar: "LM", color: "from-purple-400 to-pink-500" },
             ].map((t, i) => (
@@ -672,7 +672,7 @@ export default function HomePage() {
               <span className="bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">votre façon de travailler ?</span>
             </h2>
             <p className="text-lg sm:text-xl text-blue-100 max-w-2xl mx-auto font-medium">
-              Rejoignez des milliers d'équipes qui collaborent plus intelligemment et livrent plus vite avec TeamFlow.
+              Rejoignez des milliers d'équipes qui collaborent plus intelligemment et livrent plus vite avec Teamflows.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/auth/signup">
@@ -683,7 +683,7 @@ export default function HomePage() {
               </Link>
               <Link href="#features">
                 <button className="text-white/80 hover:text-white font-bold flex items-center gap-2 transition-all hover:gap-3">
-                  Voir toutes les fonctionnalités <ArrowRight className="w-5 h-5" />
+                  Explorer les fonctionnalités <ArrowRight className="w-5 h-5" />
                 </button>
               </Link>
             </div>
@@ -699,9 +699,9 @@ export default function HomePage() {
             <div className="col-span-2">
               <div className="flex items-center gap-3 mb-6">
                 <div className="relative w-11 h-11 rounded-2xl overflow-hidden shadow-lg shadow-blue-500/20">
-                  <Image src="/teamflow-logo.png" alt="TeamFlow Logo" fill className="object-contain" />
+                  <Image src="/teamflow-logo.png" alt="Teamflows Logo" fill className="object-contain" />
                 </div>
-                <span className="text-2xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">TeamFlow</span>
+                <span className="text-2xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Teamflows</span>
               </div>
               <p className="text-slate-500 text-sm leading-relaxed max-w-xs mb-6">
                 L'espace de travail unifié pour les équipes modernes qui refusent de ralentir.
@@ -772,7 +772,7 @@ export default function HomePage() {
           {/* Bottom bar */}
           <div className="pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-slate-600 text-sm font-medium">
-              © {new Date().getFullYear()} TeamFlow by Novastack Digital. Tous droits réservés.
+              © {new Date().getFullYear()} Teamflows by Novastack Digital. Tous droits réservés.
             </p>
             <div className="flex items-center gap-6 text-sm text-slate-600">
               <Link href="/privacy" className="hover:text-blue-400 transition-colors font-medium">Confidentialité</Link>

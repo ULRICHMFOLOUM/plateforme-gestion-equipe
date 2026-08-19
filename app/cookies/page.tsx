@@ -24,7 +24,7 @@ export default function CookiesPage() {
               </div>
             </div>
             <p className="text-blue-100 text-lg leading-relaxed max-w-2xl">
-              Informations relatives à l'utilisation des témoins de connexion (cookies) sur la plateforme TeamFlow.
+              Informations relatives à l'utilisation des témoins de connexion (cookies) sur la plateforme Teamflows.
             </p>
           </motion.div>
         </div>
@@ -40,7 +40,7 @@ export default function CookiesPage() {
           </p>
 
           <div className="space-y-4 pt-4 border-t border-slate-100">
-            <h3 className="font-bold text-slate-900">Cookies utilisés sur TeamFlow :</h3>
+            <h3 className="font-bold text-slate-900">Cookies utilisés sur Teamflows :</h3>
             <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl">
               <Check className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
               <div>

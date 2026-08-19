@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       valid: true,
       code: code.toUpperCase().trim(),
-      referrerName: referrer.name || "Parrain TeamFlow",
+      referrerName: referrer.name || "Parrain Teamflows",
       discountPercentage,
       discountAmount,
       finalAmount,

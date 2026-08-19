@@ -23,7 +23,7 @@ export default function ContactPage() {
               </div>
               <div>
                 <span className="text-blue-200 text-sm font-bold tracking-wider uppercase">Support & Questions</span>
-                <h1 className="text-3xl sm:text-4xl font-black text-white">Contactez l'équipe TeamFlow</h1>
+                <h1 className="text-3xl sm:text-4xl font-black text-white">Contactez l'équipe Teamflows</h1>
               </div>
             </div>
             <p className="text-blue-100 text-lg leading-relaxed max-w-2xl">
@@ -40,7 +40,7 @@ export default function ContactPage() {
             <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl space-y-2">
               <Mail className="w-6 h-6 text-blue-600 mb-1" />
               <p className="font-bold text-slate-900 text-sm">Email Support</p>
-              <p className="text-xs text-slate-500">support@teamflow.novastack.cm</p>
+              <p className="text-xs text-slate-500">support@teamflows.novastack.cm</p>
             </div>
 
             <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl space-y-2">

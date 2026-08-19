@@ -207,7 +207,7 @@ export default function Header() {
               <nav className="hidden md:flex items-center text-sm font-medium text-slate-500 overflow-hidden whitespace-nowrap">
                 <Link href="/dashboard" className="hover:text-blue-600 transition-colors flex items-center gap-1.5">
                   <LayoutDashboard className="w-4 h-4" />
-                  <span>TeamFlow</span>
+                  <span>Teamflows</span>
                 </Link>
                 {breadcrumbs.map((crumb) => (
                   <div key={crumb.href} className="flex items-center">

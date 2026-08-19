@@ -144,7 +144,7 @@ export default function ImportProjectPage() {
             <input
               type="text"
               required
-              placeholder="ex: Projet Migration TeamFlow"
+              placeholder="ex: Projet Migration Teamflows"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
               className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
