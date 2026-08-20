@@ -43,11 +43,16 @@ export default function ContactPage() {
               <p className="text-xs text-slate-500">support@teamflows.novastack.cm</p>
             </div>
 
-            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl space-y-2">
-              <Phone className="w-6 h-6 text-emerald-600 mb-1" />
+            <a
+              href="https://wa.me/237659021074?text=Bonjour%20l%27%C3%A9quipe%20Teamflows%2C%20j%27ai%20une%20demande%20de%20maintenance%20/%20r%C3%A9clamation"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block bg-white p-6 rounded-3xl border border-slate-100 shadow-xl space-y-2 hover:border-emerald-300 transition-all group"
+            >
+              <Phone className="w-6 h-6 text-emerald-600 mb-1 group-hover:scale-110 transition-transform" />
               <p className="font-bold text-slate-900 text-sm">Téléphone / WhatsApp</p>
-              <p className="text-xs text-slate-500">+237 600 000 000</p>
-            </div>
+              <p className="text-xs text-emerald-600 font-bold">+237 659 02 10 74 (Maintenance & Réclamations)</p>
+            </a>
 
             <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl space-y-2">
               <MapPin className="w-6 h-6 text-purple-600 mb-1" />
