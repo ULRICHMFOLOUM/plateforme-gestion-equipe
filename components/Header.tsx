@@ -203,6 +203,9 @@ export default function Header() {
                 <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
                   <LayoutDashboard className="w-5 h-5 text-white" />
                 </div>
+                <span className="text-lg font-black text-slate-900">
+                  Team<span className="text-blue-600">flows</span>
+                </span>
               </div>
               <nav className="hidden md:flex items-center text-sm font-medium text-slate-500 overflow-hidden whitespace-nowrap">
                 <Link href="/dashboard" className="hover:text-blue-600 transition-colors flex items-center gap-1.5">

@@ -18,20 +18,23 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
+          <Link href="/" className="flex items-center gap-3 group">
             <motion.div
               whileHover={{ scale: 1.08 }}
               transition={{ duration: 0.3 }}
-              className="relative w-11 h-11 rounded-2xl overflow-hidden shadow-lg group-hover:shadow-blue-500/40 transition-shadow"
+              className="relative w-11 h-11 rounded-2xl overflow-hidden shadow-lg group-hover:shadow-blue-500/40 transition-shadow flex-shrink-0"
             >
               <Image
                 src="/teamflow-logo.png"
-                alt="Logo"
+                alt="Teamflows Logo"
                 fill
                 className="object-contain"
                 priority
               />
             </motion.div>
+            <span className="text-2xl font-black text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors">
+              Team<span className="text-blue-600">flows</span>
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
