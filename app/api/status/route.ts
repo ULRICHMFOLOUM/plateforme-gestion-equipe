@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       description: "Connexion sécurisée, OAuth & JWT",
     },
     {
-      name: "Système de Paiement & Webhooks (Flutterwave / Mobile Money)",
+      name: "Système de Paiement & Webhooks (Fapshi / Mobile Money)",
       status: recentWebhookFailures > 0 ? "DEGRADED" : "OPERATIONAL",
       latency: "45ms",
       description: "Traitement des abonnements XAF, Orange & MTN Mobile Money",

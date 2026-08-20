@@ -120,7 +120,7 @@ function AdminMonitoringSection() {
         <div className="p-4 bg-red-950/40 border border-red-500/20 rounded-2xl flex items-center gap-3">
           <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
           <p className="text-xs text-red-300 font-semibold">
-            ⚠️ {statusData.metrics.recentWebhookFailures} échec(s) de webhook de paiement dans les 24 dernières heures. Vérifiez les logs Flutterwave.
+            ⚠️ {statusData.metrics.recentWebhookFailures} échec(s) de webhook de paiement dans les 24 dernières heures. Vérifiez les logs Fapshi.
           </p>
         </div>
       )}

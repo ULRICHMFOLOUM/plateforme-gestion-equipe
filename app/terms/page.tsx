@@ -58,7 +58,7 @@ export default function TermsPage() {
             <CheckCircle2 className="w-6 h-6 text-blue-600" /> 3. Abonnements et paiements
           </h2>
           <p className="text-slate-600 leading-relaxed text-sm sm:text-base">
-            Les paiements s'effectuent en Franc CFA (XAF) via notre partenaire agréé Flutterwave (Mobile Money et Carte bancaire).
+            Les paiements s'effectuent en Franc CFA (XAF) via notre partenaire agréé Fapshi (MTN Mobile Money, Orange Money et Carte bancaire).
             Les abonnements se renouvellent selon la périodicité choisie (mensuelle ou annuelle) et sont annulables à tout moment.
           </p>
         </motion.div>

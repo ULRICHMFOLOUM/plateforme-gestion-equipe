@@ -75,7 +75,7 @@ function BillingPageContent() {
     setPayments(history.payments || []);
   }
 
-  // Vérification automatique après retour de Flutterwave
+  // Vérification automatique après retour de Fapshi
   useEffect(() => {
     const paymentStatus = searchParams.get("payment");
     const txRef = searchParams.get("tx_ref");

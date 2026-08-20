@@ -16,7 +16,7 @@ const sections = [
 
 **Données d'utilisation :** Activités sur la plateforme (projets créés, tâches effectuées, messages envoyés), horodatages de connexion, adresse IP, type de navigateur et appareil.
 
-**Données de paiement :** Informations de transaction (montant, devise, référence) traitées via Flutterwave. Aucune coordonnée bancaire n'est stockée directement sur nos serveurs.`,
+**Données de paiement :** Informations de transaction (montant, devise, référence) traitées via Fapshi. Aucune coordonnée bancaire n'est stockée directement sur nos serveurs.`,
   },
   {
     icon: Shield,
@@ -42,7 +42,7 @@ Nous ne vendons, ne louons ni ne partageons vos données personnelles avec des t
 
 • **NeonDB (Neon Technologies)** : Hébergement de la base de données PostgreSQL sur des serveurs sécurisés situés aux États-Unis. Données chiffrées au repos et en transit.
 
-• **Flutterwave** : Traitement sécurisé des paiements. Flutterwave est conforme aux normes PCI-DSS. Consultez leur politique sur flutterwave.com.
+• **Fapshi** : Traitement sécurisé des paiements (Mobile Money & cartes). Fapshi est conforme aux normes de sécurité en vigueur. Consultez leur politique sur fapshi.com.
 
 • **Cloudinary** : Stockage et optimisation des images (photos de profil, pièces jointes). Serveurs certifiés ISO 27001.
 

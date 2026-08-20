@@ -146,7 +146,7 @@ export default function AdminBillingPage() {
             <div>
               <p className="text-emerald-100 text-sm font-medium mb-1">Revenus confirmés</p>
               <p className="text-3xl font-black">{formatAmount(totalRevenue)}</p>
-              <p className="text-emerald-200 text-xs mt-1">Paiements Flutterwave réussis</p>
+              <p className="text-emerald-200 text-xs mt-1">Paiements Fapshi réussis</p>
             </div>
             <TrendingUp className="w-12 h-12 text-emerald-200/50" />
           </div>
@@ -305,7 +305,7 @@ export default function AdminBillingPage() {
                       <th className="text-left px-4 py-3 text-xs font-black text-slate-500 uppercase tracking-wider">Montant</th>
                       <th className="text-left px-4 py-3 text-xs font-black text-slate-500 uppercase tracking-wider">Statut</th>
                       <th className="text-left px-4 py-3 text-xs font-black text-slate-500 uppercase tracking-wider">Date</th>
-                      <th className="text-left px-4 py-3 text-xs font-black text-slate-500 uppercase tracking-wider">Ref. Flutterwave</th>
+                      <th className="text-left px-4 py-3 text-xs font-black text-slate-500 uppercase tracking-wider">Ref. Fapshi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
