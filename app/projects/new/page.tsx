@@ -84,6 +84,9 @@ export default function NewProjectPage() {
       if (response.ok) {
         // Redirection vers la liste des projets après succès
         router.push("/projects");
+      } else if (response.status === 402) {
+        // Quota atteint : ouvrir le modal de mise à niveau
+        window.dispatchEvent(new CustomEvent("openUpgradeModal", { detail: { reason: "maxProjects" } }));
       } else {
         const error = await response.text();
         alert(`Erreur création: ${error}`);

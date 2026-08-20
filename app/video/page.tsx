@@ -213,6 +213,8 @@ function VideoPageContent() {
         setStartTime("");
         setSharingConf(conf);
         showToast({ type: "success", title: "Réunion créée !", message: conf.title });
+      } else if (res.status === 402) {
+        window.dispatchEvent(new CustomEvent("openUpgradeModal", { detail: { reason: "videoConferences" } }));
       } else {
         showToast({ type: "error", title: "Erreur lors de la création" });
       }
@@ -223,6 +225,18 @@ function VideoPageContent() {
 
   const handleJoin = (conf: Conference) => {
     router.push(`/video/join/${conf.roomId}`);
+  };
+
+  // Check plan: FREE users cannot use video conferences
+  const userPlan = (session?.user as any)?.plan || "FREE";
+  const isFreePlan = userPlan === "FREE" || userPlan === "TRIAL";
+
+  const handleCreateClick = () => {
+    if (isFreePlan) {
+      window.dispatchEvent(new CustomEvent("openUpgradeModal", { detail: { reason: "videoConferences" } }));
+      return;
+    }
+    setIsCreating(true);
   };
 
   if (status === "loading") return <LoadingScreen />;
@@ -248,7 +262,7 @@ function VideoPageContent() {
           </div>
 
           <button
-            onClick={() => setIsCreating(true)}
+            onClick={handleCreateClick}
             className="flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-sm rounded-2xl shadow-lg shadow-blue-500/25 hover:shadow-xl transition-all active:scale-95"
           >
             <Plus className="w-4.5 h-4.5" /> Programmer une réunion

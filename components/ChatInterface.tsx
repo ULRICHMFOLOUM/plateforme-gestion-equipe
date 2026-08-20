@@ -35,6 +35,7 @@ import {
   Mic,
   CheckSquare,
   ShieldCheck,
+  ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
 import EmojiPicker from "emoji-picker-react";
@@ -489,6 +490,53 @@ export function ChatInterface({ isWidget = false }: { isWidget?: boolean }) {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const renderMessageText = (content: string, isMine: boolean) => {
+    if (!content) return null;
+    const urlRegex = /(https?:\/\/[^\s]+|\/(?:video|projects|tasks)[^\s]*)/gi;
+    const parts = content.split(urlRegex);
+
+    return parts.map((part, i) => {
+      if (part.match(urlRegex)) {
+        const isVideoLink = /video|visio|jitsi|meet/i.test(part);
+
+        if (isVideoLink) {
+          return (
+            <a
+              key={i}
+              href={part}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl font-bold text-xs shadow-lg transition-all my-1.5 ${
+                isMine
+                  ? "bg-white text-blue-700 hover:bg-blue-50 shadow-blue-900/20"
+                  : "bg-gradient-to-r from-red-500 to-pink-600 text-white hover:from-red-600 hover:to-pink-700 shadow-red-500/20"
+              }`}
+            >
+              <Video className="w-4 h-4 animate-pulse shrink-0" />
+              <span>Rejoindre la visioconférence</span>
+              <ExternalLink className="w-3.5 h-3.5 opacity-80 shrink-0" />
+            </a>
+          );
+        }
+
+        return (
+          <a
+            key={i}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`underline font-bold break-all transition-opacity hover:opacity-80 ${
+              isMine ? "text-white" : "text-blue-600"
+            }`}
+          >
+            {part}
+          </a>
+        );
+      }
+      return <span key={i}>{part}</span>;
+    });
+  };
+
   const formatTime = (date: Date) => {
     const d = new Date(date);
     return d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
@@ -776,9 +824,9 @@ export function ChatInterface({ isWidget = false }: { isWidget?: boolean }) {
 
                           {/* Message Content */}
                           {message.content && (
-                            <p className="text-sm font-medium leading-relaxed whitespace-pre-wrap break-words">
-                              {message.content}
-                            </p>
+                            <div className="text-sm font-medium leading-relaxed whitespace-pre-wrap break-words">
+                              {renderMessageText(message.content, isMine)}
+                            </div>
                           )}
 
                           {/* Files / Images / Audio Inline Previews */}

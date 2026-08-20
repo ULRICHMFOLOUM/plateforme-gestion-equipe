@@ -5,6 +5,7 @@ import { Providers } from "./providers";
 import ChatButton from "@/components/ChatButton";
 import PageTransition from "@/components/PageTransition";
 import ToastContainer from "@/components/ui/Toast";
+import UpgradeModal from "@/components/ui/UpgradeModal";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -46,6 +47,7 @@ export default function RootLayout({
           {children}
           <ChatButton />
           <ToastContainer />
+          <UpgradeModal />
         </Providers>
         <script
           dangerouslySetInnerHTML={{
