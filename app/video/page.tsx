@@ -227,12 +227,32 @@ function VideoPageContent() {
     router.push(`/video/join/${conf.roomId}`);
   };
 
-  // Check plan: FREE users cannot use video conferences
+  // Vérification du plan : bloquer seulement si le trial est expiré (plan effectif = FREE)
   const userPlan = (session?.user as any)?.plan || "FREE";
-  const isFreePlan = userPlan === "FREE" || userPlan === "TRIAL";
+  const trialEndsAt = (session?.user as any)?.trialEndsAt;
+  const isInternalAccount = (session?.user as any)?.isInternalAccount;
+
+  // Calcul du plan effectif côté client (même logique que getEffectivePlan)
+  const getClientEffectivePlan = () => {
+    if (isInternalAccount) return "ENTERPRISE";
+    const now = new Date();
+    if (userPlan === "TRIAL") {
+      if (trialEndsAt && new Date(trialEndsAt) > now) return "TRIAL"; // Trial encore actif → accès complet
+      return "FREE"; // Trial expiré → bloqué
+    }
+    if (userPlan === "PRO" || userPlan === "ENTERPRISE") {
+      const subEndsAt = (session?.user as any)?.subscriptionEndsAt;
+      if (subEndsAt && new Date(subEndsAt) > now) return userPlan;
+      return "FREE"; // Abonnement expiré → bloqué
+    }
+    return userPlan;
+  };
+
+  const effectivePlan = getClientEffectivePlan();
+  const canUseVideo = effectivePlan === "TRIAL" || effectivePlan === "PRO" || effectivePlan === "ENTERPRISE";
 
   const handleCreateClick = () => {
-    if (isFreePlan) {
+    if (!canUseVideo) {
       window.dispatchEvent(new CustomEvent("openUpgradeModal", { detail: { reason: "videoConferences" } }));
       return;
     }
